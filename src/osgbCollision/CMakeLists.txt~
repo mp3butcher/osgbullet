@@ -22,7 +22,6 @@ set( LIB_PUBLIC_HEADERS
     ${HEADER_PATH}/AbsoluteModelTransform.h
     ${HEADER_PATH}/GeometryOperation.h
  ${HEADER_PATH}/ReducerOp.h
- ${HEADER_PATH}/GeometryModifier.h
 )
 
 set( _osgBulletSourceFiles
@@ -41,7 +40,6 @@ set( _osgBulletSourceFiles
 AbsoluteModelTransform.cpp
 GeometryOperation.cpp
 ReducerOp.cpp
-GeometryModifier.cpp
 )
 
 add_library( ${LIB_NAME}

@@ -110,10 +110,10 @@ INCLUDE( CMakeMacros )
 include( FindOSGHelper )
 include( FindBulletHelper )
 
-FIND_PACKAGE( osgWorks 2.0.0 REQUIRED )
-if( osgWorks_FOUND )
-    include( ${osgWorks_USE_FILE} )
-endif()
+#FIND_PACKAGE( osgWorks 2.0.0 REQUIRED )
+#if( osgWorks_FOUND )
+   # include( ${osgWorks_USE_FILE} )
+#endif()
 
 # OSGBULLET_USE_DOUBLE_PRECISION gets set to TRUE or FALSE in FindBulletHelper.cmake.
 # If TRUE, add the BT double precision definition globally.
@@ -133,7 +133,7 @@ else()
 endif()
 
 
-INCLUDE_DIRECTORIES( 
+INCLUDE_DIRECTORIES(
     ${PROJECT_SOURCE_DIR}/include
     ${OSG_INCLUDE_DIRS}
     #${OSGWORKS_INCLUDE_DIR}
@@ -183,6 +183,10 @@ ADD_SUBDIRECTORY( src/osgbCollision )
 ADD_SUBDIRECTORY( src/osgbDynamics )
 ADD_SUBDIRECTORY( src/osgbInteraction )
 ADD_SUBDIRECTORY( src/plugins )
+ADD_SUBDIRECTORY( pmoc-osgbCollision )
+ADD_SUBDIRECTORY( pmoc-osgbDynamics )
+ADD_SUBDIRECTORY( pmoc-osgbInteraction )
+ADD_SUBDIRECTORY( osgbulletserializer )
 
 #
 # Doxygen
@@ -192,7 +196,7 @@ if( DOXYGEN_FOUND )
     if( DOXYGEN_DOT_PATH )
         set( HAVE_DOT "YES" )
     endif()
-    
+
     configure_file( ${PROJECT_SOURCE_DIR}/doc/doxyfile.cmake
         ${PROJECT_BINARY_DIR}/doc/doxyfile
     )
@@ -201,7 +205,7 @@ if( DOXYGEN_FOUND )
     )
 endif()
 
-# On windows provide the user with the pdb files 
+# On windows provide the user with the pdb files
 # for debugging if they are present
 if(MSVC)
     install(
@@ -250,12 +254,12 @@ include( CMakePackageConfigHelpers )
 #file(RELATIVE_PATH CONF_REL_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}"
 #   "${CMAKE_INSTALL_PREFIX}/include")
 
-configure_package_config_file( 
+configure_package_config_file(
     osgBulletConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/osgBulletConfig.cmake
     INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}
     PATH_VARS OSGBULLET_USE_DOUBLE_PRECISION )
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/osgBulletConfig.cmake 
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/osgBulletConfig.cmake
               ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/osgBulletConfigVersion.cmake
               ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/UseosgBullet.cmake
         DESTINATION ${CMAKE_INSTALL_LIBDIR} )

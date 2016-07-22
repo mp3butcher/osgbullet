@@ -23,7 +23,7 @@
 
 #include <osg/MatrixTransform>
 
-#include <osgwTools/AbsoluteModelTransform.h>
+#include <osgbCollision/AbsoluteModelTransform.h>
 
 #include <btBulletCollisionCommon.h>
 #include <osgbDynamics/Export.h>
@@ -95,7 +95,7 @@ public:
 
     /** \brief Bullet interface routine for changing the rigid body (and corresponding
     OSG visual representation) transformation.
-    
+
     Bullet sets and gets the rigid body world transformation using
     these routines (setWorldTransform() and getWorldTransform() ). They are
     promarily for use by Bullet only, but setWorldTransform() is also called
@@ -187,20 +187,20 @@ public:
     concatenation of the center of mass and parent transform. It is called by
     setCenterOfMass() and setParentTransform() to set the initial world
     transformation. See also setWorldTransformation().
-    
+
     Applications typically do not need to call this function. */
     void resetTransform();
 
 
     /** \brief Register a MotionState for use with a TripleBuffer.
-    
+
     Allows a MotionState to keep its world transform in a TripleBuffer object,
     which enables multithreaded physics simulation. */
     void registerTripleBuffer( osgbDynamics::TripleBuffer* tb );
 
     /** \brief Gets the latest updated world transform value from the TripleBuffer
     and pushes it out to the MotionState object's OSG Transform.
-    
+
     Called by TripleBufferMotionStateUpdate() and not inteded for application use. */
     void updateTripleBuffer( const char* addr );
 
@@ -211,7 +211,7 @@ private:
     // MotionState is associated with an AbsoluteModelTransform or a
     // plain old MatrixTransform.
     osg::ref_ptr< osg::MatrixTransform > _mt;
-    osg::ref_ptr< osgwTools::AbsoluteModelTransform > _amt;
+    osg::ref_ptr< osgbCollision::AbsoluteModelTransform > _amt;
 
     // This is the accumulated model-to-world matrix of parent Transform nodes
     // in the scene graph.

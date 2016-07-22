@@ -25,7 +25,7 @@
 #include <osgbCollision/Export.h>
 #include <osg/NodeVisitor>
 #include <osg/Array>
-#include <osgwTools/Version.h>
+//#include <osgwTools/Version.h>
 
 
 namespace osgbCollision
@@ -41,7 +41,7 @@ class OSGBCOLLISION_EXPORT ComputeTriMeshVisitor : public osg::NodeVisitor
 public:
     ComputeTriMeshVisitor( osg::NodeVisitor::TraversalMode traversalMode = TRAVERSE_ALL_CHILDREN );
 #if( OSGWORKS_OSG_VERSION >= 20800 )
-    META_NodeVisitor(osgbCollision,ComputeTriMeshVisitor);
+   // META_NodeVisitor(osgbCollision,ComputeTriMeshVisitor);
 #endif
 
     virtual void reset();

@@ -9,11 +9,13 @@ set( LIB_PUBLIC_HEADERS
     ${HEADER_PATH}/CreationRecord.h
     ${HEADER_PATH}/GroundPlane.h
     ${HEADER_PATH}/MotionState.h
-    ${HEADER_PATH}/PhysicsState.h
+   # ${HEADER_PATH}/PhysicsState.h
     ${HEADER_PATH}/PhysicsThread.h
     ${HEADER_PATH}/RigidBody.h
     ${HEADER_PATH}/RigidBodyAnimation.h
     ${HEADER_PATH}/TripleBuffer.h
+
+    ${HEADER_PATH}/World.h
 )
 
 set( _osgBulletSourceFiles
@@ -21,11 +23,12 @@ set( _osgBulletSourceFiles
     CreationRecord.cpp
     GroundPlane.cpp
     MotionState.cpp
-    PhysicsState.cpp
+   # PhysicsState.cpp
     PhysicsThread.cpp
     RigidBody.cpp
     RigidBodyAnimation.cpp
     TripleBuffer.cpp
+    World.cpp
 )
 
 add_library( ${LIB_NAME}

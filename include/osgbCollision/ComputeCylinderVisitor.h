@@ -23,7 +23,7 @@
 
 #include <osgbCollision/Export.h>
 #include <osg/NodeVisitor>
-#include <osgwTools/Version.h>
+//#include <osgwTools/Version.h>
 
 #include <osgbCollision/BoundingCylinder.h>
 

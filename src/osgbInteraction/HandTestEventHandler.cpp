@@ -20,11 +20,46 @@
 
 #include <osgbInteraction/HandTestEventHandler.h>
 #include <osgbInteraction/HandNode.h>
-#include <osgwTools/Quat.h>
+ 
 
 
 namespace osgbInteraction
 {
+osg::Quat
+makeHPRQuat( double h, double p, double r )
+{
+   // OSG_NOTICE << "makeHPRQuat() is deprecated. Use Orientation instead." << std::endl;
+
+
+    // Given h, p, and r angles in degrees, build a Quat to affect these rotatiions.
+    // We do this by creating a Matrix that contains correctly-oriented x, y, and
+    // z axes. Then we create the Quat from the Matrix.
+    //
+    // First, create x, y, and z axes that represent the h, p, and r angles.
+    //   Rotate x and y axes by the heading.
+    osg::Vec3 z( 0., 0., 1. );
+    osg::Quat qHeading( osg::DegreesToRadians( h ), z );
+    osg::Vec3 x = qHeading * osg::Vec3( 1., 0., 0. );
+    osg::Vec3 y = qHeading * osg::Vec3( 0., 1., 0. );
+    //   Rotate z and y axes by the pitch.
+    osg::Quat qPitch( osg::DegreesToRadians( p ), x );
+    y = qPitch * y;
+    z = qPitch * z;
+    //   Rotate x and z axes by the roll.
+    osg::Quat qRoll( osg::DegreesToRadians( r ), y );
+    x = qRoll * x;
+    z = qRoll * z;
+    // Use x, y, and z axes to create an orientation matrix.
+    osg::Matrix m( x[0], x[1], x[2], 0.,
+                  y[0], y[1], y[2], 0.,
+                  z[0], z[1], z[2], 0.,
+                  0., 0., 0., 1. );
+
+    osg::Quat quat;
+    quat.set( m );
+    return( quat );
+}
+
 
 
 HandTestEventHandler::HandTestEventHandler( osgbInteraction::HandNode* hn )
@@ -198,7 +233,7 @@ HandTestEventHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIAction
             _lastX = ea.getXnormalized();
             _lastY = ea.getYnormalized();
 
-            osg::Quat q = osgwTools::makeHPRQuat(
+            osg::Quat q =  makeHPRQuat(
                 osg::RadiansToDegrees( _h ),
                 osg::RadiansToDegrees( _p ),
                 osg::RadiansToDegrees( _r ) );
@@ -450,7 +485,7 @@ VirtualHandTestEventHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GU
                 _lastX = ea.getXnormalized();
                 _lastY = ea.getYnormalized();
 
-                osg::Quat q = osgwTools::makeHPRQuat(
+                osg::Quat q =  makeHPRQuat(
                     osg::RadiansToDegrees( _h ),
                     osg::RadiansToDegrees( _p ),
                     osg::RadiansToDegrees( _r ) );

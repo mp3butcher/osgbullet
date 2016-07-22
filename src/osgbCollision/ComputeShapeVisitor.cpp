@@ -22,15 +22,18 @@
 #include <osg/ComputeBoundsVisitor>
 #include <osg/Geode>
 #include <osg/Notify>
-#include <osgwTools/Transform.h>
+#include <osgUtil/TransformAttributeFunctor>
+/*#include <osgwTools/Transform.h>
 #include <osgwTools/Version.h>
 #if( OSGWORKS_OSG_VERSION < 30109 )
 #  include <osgwTools/ShortEdgeOp.h>
 #endif
 #include <osgwTools/ReducerOp.h>
-#include <osgwTools/GeometryModifier.h>
+#include <osgwTools/GeometryModifier.h>*/
 #include <osgbCollision/Utils.h>
-#include <osgwTools/AbsoluteModelTransform.h>
+#include <osgbCollision/ReducerOp.h>
+#include <osgbCollision/GeometryModifier.h>
+#include <osgbCollision/AbsoluteModelTransform.h>
 
 
 namespace osgbCollision
@@ -71,7 +74,7 @@ void ComputeShapeVisitor::apply( osg::Transform& node )
         _bs = node.getBound();
 
     /* Override apply(Transform&) to avoid processing AMT nodes. */
-    const bool nonAMT = ( dynamic_cast< osgwTools::AbsoluteModelTransform* >( &node ) == NULL );
+    const bool nonAMT = ( dynamic_cast< AbsoluteModelTransform* >( &node ) == NULL );
     if( nonAMT )
         _localNodePath.push_back( &node );
 
@@ -112,6 +115,8 @@ void ComputeShapeVisitor::createAndAddShape( osg::Node& node, const osg::Matrix&
         master->addChildShape( transform, child );
     }
 }
+
+
 btCollisionShape* ComputeShapeVisitor::createShape( osg::Node& node, const osg::Matrix& m )
 {
     osg::notify( osg::DEBUG_INFO ) << "In createShape" << std::endl;
@@ -124,7 +129,11 @@ btCollisionShape* ComputeShapeVisitor::createShape( osg::Node& node, const osg::
         return( NULL );
     }
     osg::ref_ptr< osg::Geode > geodeCopy = new osg::Geode( *( node.asGeode() ), osg::CopyOp::DEEP_COPY_ALL );
-    osgwTools::transform( m, geodeCopy->asGeode() );
+    //osgwTools::transform( m, geodeCopy->asGeode() );
+
+  osgUtil::TransformAttributeFunctor tf(m);
+    for(unsigned int i=0;i<geodeCopy->getNumDrawables();i++)
+        geodeCopy->getDrawable(i)->accept(tf);
 
     btCollisionShape* collision( NULL );
     osg::Vec3 center;
@@ -166,7 +175,7 @@ btCollisionShape* ComputeShapeVisitor::createShape( osg::Node& node, const osg::
     case CONVEX_TRIANGLEMESH_SHAPE_PROXYTYPE:
     {
         // Do _not_ compute center of bounding sphere for tri meshes.
-        
+
         // Reduce geometry.
         reduce( *geodeCopy );
         collision = osgbCollision::btConvexTriMeshCollisionShapeFromOSG( geodeCopy );
@@ -238,7 +247,7 @@ void ComputeShapeVisitor::reduce( osg::Node& node )
     seFeature *= _bs.radius() * 2.;
 
     osg::notify( osg::DEBUG_FP ) << "ComputeShapeVisitor: Reducing..." << std::endl;
-#if( OSGWORKS_OSG_VERSION < 30109 )
+/*#if( OSGWORKS_OSG_VERSION < 30109 )
     {
         osgwTools::ShortEdgeOp* seOp = new osgwTools::ShortEdgeOp( sePercent, seFeature );
         seOp->setDoTriStrip( false );
@@ -248,14 +257,14 @@ void ComputeShapeVisitor::reduce( osg::Node& node )
         node.accept( modifier );
         modifier.displayStatistics( osg::notify( osg::DEBUG_FP ) );
     }
-#endif
+#endif*/
 
     {
-        osgwTools::ReducerOp* redOp = new osgwTools::ReducerOp;
+        ReducerOp* redOp = new ReducerOp;
         redOp->setGroupThreshold( grpThreshold );
         redOp->setMaxEdgeError( edgeError );
 
-        osgwTools::GeometryModifier modifier( redOp );
+        GeometryModifier modifier( redOp );
         node.accept( modifier );
         modifier.displayStatistics( osg::notify( osg::DEBUG_FP ) );
     }

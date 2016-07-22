@@ -30,7 +30,7 @@
 // Forward
 namespace osg {
     class Node;
-    class Geometry;
+    class Drawable;
 }
 
 
@@ -152,18 +152,26 @@ OSGBCOLLISION_EXPORT osg::Node* osgNodeFromBtCollisionShape( const btConvexHullS
 /*@{*/
 /** \brief Returns an OSG Geometry to render the specified collision shape.
 
-Uses the osgWorks Shapes utilities to create the box Geometry. */
+Uses the osgWorks Shapes utilities to create the box Geometry.
 OSGBCOLLISION_EXPORT osg::Geometry* osgGeometryFromBtCollisionShape( const btBoxShape* btShape );
 /** \brief Returns an OSG Geometry to render the specified collision shape.
 
-Uses the osgWorks Shapes utilities to create the sphere Geometry. */
+Uses the osgWorks Shapes utilities to create the sphere Geometry. * /
 OSGBCOLLISION_EXPORT osg::Geometry* osgGeometryFromBtCollisionShape( const btSphereShape* btSphere );
 /**  \brief Returns an OSG Geometry to render the specified collision shape.
 
 Uses the OSG ShapeDrawable utilities to create the cylinder Geometry.
 When osgWorks Shapes supports cylinders, the implementation will be modified to
-remove the dependency on ShapeDrawable. */
-OSGBCOLLISION_EXPORT osg::Geometry* osgGeometryFromBtCollisionShape( const btCylinderShape* btCylinder );
+remove the dependency on ShapeDrawable. * /
+OSGBCOLLISION_EXPORT osg::Geometry* osgGeometryFromBtCollisionShape( const btCylinderShape* btCylinder ); */
+
+
+OSGBCOLLISION_EXPORT osg::Drawable* osgDrawableFromBtCollisionShape( const btBoxShape* btShape );
+
+OSGBCOLLISION_EXPORT osg::Drawable* osgDrawableFromBtCollisionShape( const btSphereShape* btSphere );
+
+OSGBCOLLISION_EXPORT osg::Drawable* osgDrawableFromBtCollisionShape( const btCylinderShape* btCylinder );
+
 /*@}*/
 
 /**@}*/

@@ -24,7 +24,7 @@
 #include <osgbCollision/Export.h>
 #include <osg/NodeVisitor>
 #include <osg/Array>
-#include <osgwTools/Version.h>
+//#include <osgwTools/Version.h>
 
 
 namespace osgbCollision
@@ -41,7 +41,7 @@ public:
     CollectVerticesVisitor( osg::NodeVisitor::TraversalMode traversalMode = osg::NodeVisitor::TRAVERSE_ALL_CHILDREN );
 
 #if( OSGWORKS_OSG_VERSION >= 20800 )
-    META_NodeVisitor(osgbCollision,CollectVerticesVisitor);
+ //   META_NodeVisitor(osgbCollision,CollectVerticesVisitor);
 #endif
 
     virtual void reset();

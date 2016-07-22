@@ -21,6 +21,7 @@
 #include <osgbDynamics/RigidBody.h>
 #include <osgbDynamics/CreationRecord.h>
 #include <osgbDynamics/MotionState.h>
+#include <osgbDynamics/World.h>
 #include <osgbCollision/CollisionShapes.h>
 
 #include <osg/Node>
@@ -34,6 +35,48 @@
 namespace osgbDynamics
 {
 
+class FindParentVisitor : public osg::NodeVisitor
+{
+public:
+    FindParentVisitor()
+    : osg::NodeVisitor(osg::NodeVisitor::TRAVERSE_PARENTS), foundWorld(NULL)  {}
+
+    void apply( osg::Node& node )
+    {
+        osg::Callback* cb = node.getUpdateCallback();
+        while ( cb && !foundWorld )
+        {
+            foundWorld = dynamic_cast<World*>(cb);
+
+            cb = cb->getNestedCallback();
+        }
+        traverse( node );
+    }
+
+    World* foundWorld;
+};
+
+
+
+void PhysicalObject::operator()( osg::Node* node, osg::NodeVisitor* nv )
+{
+
+        if ( !_parentWorld){
+        FindParentVisitor fpv;
+        node->accept(fpv);
+        _parentWorld=fpv.foundWorld;
+
+        }
+         traverse( node, nv );
+ }
+
+ PhysicalObject::~PhysicalObject(){}
+
+RigidBody::RigidBody(){}
+RigidBody::~RigidBody(){}
+
+SoftBody::SoftBody(){}
+SoftBody::~SoftBody(){}
 
 btRigidBody* createRigidBody( osgbDynamics::CreationRecord* cr )
 {

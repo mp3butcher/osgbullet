@@ -25,24 +25,109 @@
 #include <osgbCollision/ComputeTriMeshVisitor.h>
 #include <osgbCollision/ComputeCylinderVisitor.h>
 #include <osgbCollision/CollectVerticesVisitor.h>
-#include <osgwTools/ForceFlattenTransforms.h>
+//#include <osgwTools/ForceFlattenTransforms.h>
 #include <osgbCollision/Utils.h>
-#include <osgwTools/Shapes.h>
+//#include <osgwTools/Shapes.h>
 
 #include <osg/ComputeBoundsVisitor>
 #include <osg/ShapeDrawable>
 #include <osg/Geometry>
 #include <osg/Geode>
+#include <osg/Vec2s>
 #include <osg/MatrixTransform>
 
 #include <osg/Timer>
 #include <osg/io_utils>
 #include <iostream>
 
-
+#include <osg/Node>
+#include <osg/Transform>
+#include <osg/MatrixTransform>
+#include <osg/PositionAttitudeTransform>
+#include <osg/Geode>
+#include <osg/Geometry>
+#include <osgUtil/TransformAttributeFunctor>
+#include <osg/Notify>
+#include <string>
 namespace osgbCollision
 {
 
+class ForceFlattenTransforms : public osg::NodeVisitor
+{
+public:
+    ForceFlattenTransforms();
+
+
+
+    void apply( osg::Transform& node );
+    void apply( osg::MatrixTransform& node );
+    void apply( osg::PositionAttitudeTransform& node );
+    void apply( osg::Geode& node );
+
+protected:
+    void flattenDrawable( osg::Drawable* drawable, const osg::Matrix& matrix );
+};
+
+
+
+
+ForceFlattenTransforms::ForceFlattenTransforms()
+  : osg::NodeVisitor( osg::NodeVisitor::TRAVERSE_ALL_CHILDREN )
+{}
+
+void ForceFlattenTransforms::apply( osg::Transform& node )
+{
+    // This is a Transform that isn't a MatrixTransform and isn't a PAT.
+    // If it is not an AMT, display a warning.
+    if( node.className() != std::string( "AbsoluteModelTransform" ) )
+        osg::notify( osg::INFO ) << "OSGToCollada: Warning: Non-MatrixTransform encountered: (" <<
+            node.className() << ") " << node.getName() << std::endl;
+    traverse( node );
+}
+void ForceFlattenTransforms::apply( osg::MatrixTransform& node )
+{
+    traverse( node );
+    node.setMatrix( osg::Matrix::identity() );
+}
+void ForceFlattenTransforms::apply( osg::PositionAttitudeTransform& node )
+{
+    traverse( node );
+    node.setPosition(osg::Vec3(0.0f,0.0f,0.0f));
+    node.setAttitude(osg::Quat());
+    node.setPivotPoint(osg::Vec3(0.0f,0.0f,0.0f));
+    node.setScale(osg::Vec3(1.0f,1.0f,1.0f));
+}
+
+void ForceFlattenTransforms::apply( osg::Geode& node )
+{
+    osg::Matrix l2w = osg::computeLocalToWorld( getNodePath() );
+    unsigned int idx;
+    for( idx=0; idx<node.getNumDrawables(); idx++ )
+    {
+        osg::Drawable* draw( node.getDrawable( idx ) );
+
+        osg::Geometry* geom( dynamic_cast< osg::Geometry* >( draw ) );
+        if( geom )
+        {
+            // Requires 2.6.1, the necessary Geometry support didn't exist in 2.6.
+            if( geom->containsSharedArrays() )
+                geom->duplicateSharedArrays();
+        }
+
+        flattenDrawable( draw, l2w );
+    }
+}
+
+void ForceFlattenTransforms::flattenDrawable( osg::Drawable* drawable, const osg::Matrix& matrix )
+{
+    if( drawable )
+    {
+        osgUtil::TransformAttributeFunctor tf(matrix);
+        drawable->accept(tf);
+        drawable->dirtyBound();
+        drawable->dirtyDisplayList();
+    }
+}
 
 btSphereShape* btSphereCollisionShapeFromOSG( osg::Node* node )
 {
@@ -312,7 +397,7 @@ osg::Node* osgNodeFromBtCollisionShape( const btCollisionShape* btShape, const b
 osg::Node* osgNodeFromBtCollisionShape( const btBoxShape* btBox, const btTransform& trans )
 {
     osg::Geode* geode = new osg::Geode();
-    geode->addDrawable( osgGeometryFromBtCollisionShape( btBox ) );
+    geode->addDrawable( osgDrawableFromBtCollisionShape( btBox ) );
 
     osg::Matrix m = asOsgMatrix( trans );
     if (m.isIdentity())
@@ -329,7 +414,7 @@ osg::Node* osgNodeFromBtCollisionShape( const btBoxShape* btBox, const btTransfo
 osg::Node* osgNodeFromBtCollisionShape( const btSphereShape* btSphere, const btTransform& trans )
 {
     osg::Geode* geode = new osg::Geode();
-    geode->addDrawable( osgGeometryFromBtCollisionShape( btSphere ) );
+    geode->addDrawable( osgDrawableFromBtCollisionShape( btSphere ) );
 
     osg::Matrix m = asOsgMatrix( trans );
     if (m.isIdentity())
@@ -542,17 +627,192 @@ osg::Node* osgNodeFromBtCollisionShape( const btConvexHullShape* hull, const btT
 }
 
 
-osg::Geometry* osgGeometryFromBtCollisionShape( const btBoxShape* btBox )
+osg::Drawable* osgDrawableFromBtCollisionShape( const btBoxShape* btBox )
 {
-    return( osgwTools::makeBox( osgbCollision::asOsgVec3( btBox->getHalfExtentsWithMargin() ) ) );
+    //return( osgwTools::makeBox(  ) );
+    osg::ref_ptr<osg::Box> b=new osg::Box();
+    b ->setHalfLengths(osgbCollision::asOsgVec3( btBox->getHalfExtentsWithMargin() ));
+    return new osg::ShapeDrawable(b);
 }
 
-osg::Geometry* osgGeometryFromBtCollisionShape( const btSphereShape* btSphere )
+osg::Drawable* osgDrawableFromBtCollisionShape( const btSphereShape* btSphere )
 {
-    return( osgwTools::makeAltAzSphere( btSphere->getRadius() ) );
+   // return( osgwTools::makeAltAzSphere( btSphere->getRadius() ) );
+    osg::ref_ptr<osg::Sphere> b=new osg::Sphere(osg::Vec3(), btSphere->getRadius());
+
+    return new osg::ShapeDrawable(b);
 }
 
-osg::Geometry* osgGeometryFromBtCollisionShape( const btCylinderShape* btCylinder )
+static osg::Vec3Array*
+generateCircleVertices( unsigned int approx, double radius, osg::Vec4 plane, bool close=false )
+{
+    // Find ideal base vector (at 90 degree angle to normalVec)
+    osg::Vec3 normalVec( plane[0], plane[1], plane[2] );
+    normalVec.normalize();
+    osg::Vec3 crossVec( 1., 0., 0. );
+    if( osg::absolute( normalVec * crossVec ) > .9 )
+        crossVec = osg::Vec3( 0., 1., 0. );
+    osg::Vec3 baseVec = normalVec ^ crossVec;
+    baseVec.normalize();
+    baseVec = ( baseVec * radius ) + ( normalVec * plane[ 3 ] );
+
+    osg::ref_ptr< osg::Vec3Array > verts = new osg::Vec3Array;
+    unsigned int totalVerts = approx + ( close ? 1 : 0 );
+    verts->resize( totalVerts );
+
+    unsigned int idx;
+	for( idx=0; idx < approx; idx++ )
+    {
+        const double angle( 2. * osg::PI * (double)idx / (double)approx );
+        osg::Matrix m( osg::Matrix::rotate( angle, normalVec ) );
+        ( *verts )[ idx ] = baseVec * m;
+    }
+    if( close )
+        ( *verts )[ idx ] = ( *verts )[ 0 ];
+
+    return( verts.release() );
+}
+
+static bool
+buildCylinderData( const double length, const double radius0, const double radius1, const osg::Vec2s& subdivisions, osg::Geometry* geometry, const bool wire )
+{
+    int subCylinders = subdivisions[ 0 ];
+    if( subCylinders < 1 )
+        subCylinders = 1;
+    const double radiusDelta = ( radius1 - radius0 ) / subCylinders;
+
+    osg::Vec3Array* vertices;
+    if( geometry->getVertexArray() != NULL )
+    {
+        vertices = dynamic_cast< osg::Vec3Array* >( geometry->getVertexArray() );
+        if( vertices == NULL )
+            return( false );
+    }
+    else
+    {
+        vertices = new osg::Vec3Array;
+        geometry->setVertexArray( vertices );
+    }
+
+    osg::Vec3Array* normals;
+    osg::Vec2Array* texCoords;
+    if( !wire )
+    {
+        if( geometry->getNormalArray() != NULL )
+        {
+            normals = dynamic_cast< osg::Vec3Array* >( geometry->getNormalArray() );
+            if( normals == NULL )
+                return( false );
+        }
+        else
+        {
+            normals = new osg::Vec3Array;
+            geometry->setNormalArray( normals );
+        }
+        geometry->setNormalBinding( osg::Geometry::BIND_PER_VERTEX );
+
+        if( geometry->getTexCoordArray( 0 ) != NULL )
+        {
+            texCoords = dynamic_cast< osg::Vec2Array* >( geometry->getTexCoordArray( 0 ) );
+            if( texCoords == NULL )
+                return( false );
+        }
+        else
+        {
+            texCoords = new osg::Vec2Array;
+            geometry->setTexCoordArray( 0, texCoords );
+        }
+    }
+
+    osg::Vec4Array* osgC = new osg::Vec4Array;
+    osgC->push_back( osg::Vec4( 1., 1., 1., 1. ) );
+    geometry->setColorArray( osgC );
+    geometry->setColorBinding( osg::Geometry::BIND_OVERALL );
+
+
+    // Generate a set of normals that we'll map to each cylinder hoop.
+    osg::Vec4 plane( 0., 0., 1., 0. );
+    osg::ref_ptr< osg::Vec3Array > cNorms;
+    if( !wire )
+        cNorms = generateCircleVertices( subdivisions[ 1 ], 1., plane, true );
+
+    int idx;
+    for( idx=0; idx <= subCylinders; idx++ )
+    {
+        const double percent( (double)idx / (double)subCylinders );
+        plane[ 3 ] = length * percent;
+
+        const double radius = radius0 + ( idx * radiusDelta );
+        osg::ref_ptr< osg::Vec3Array > cVerts = generateCircleVertices( subdivisions[ 1 ], radius, plane, !wire );
+        vertices->insert( vertices->end(), cVerts->begin(), cVerts->end() );
+
+        if( !wire )
+        {
+            normals->insert( normals->end(), cNorms->begin(), cNorms->end() );
+
+            const double tVal( percent );
+            texCoords->reserve( vertices->size() );
+            unsigned int tcIdx;
+            for( tcIdx = 0; tcIdx < cVerts->size(); tcIdx++ )
+            {
+                const double sVal( (double)tcIdx / (double)( cVerts->size() - 1 ) );
+                texCoords->push_back( osg::Vec2( sVal, tVal ) );
+            }
+        }
+    }
+
+
+    // Add PrimitiveSets
+
+    if( !wire )
+    {
+        const unsigned int vertCount = vertices->size() / ( subCylinders + 1 );
+        for( idx=0; idx < subCylinders; idx++ )
+        {
+            osg::DrawElementsUShort* deus = new osg::DrawElementsUShort( GL_TRIANGLE_STRIP );
+            unsigned int vIdx = vertCount * ( idx + 1 );
+            unsigned int innerIdx;
+            for( innerIdx = 0; innerIdx < vertCount; innerIdx++ )
+            {
+                deus->push_back( vIdx );
+                deus->push_back( vIdx - vertCount );
+                vIdx++;
+            }
+            geometry->addPrimitiveSet( deus );
+        }
+    }
+    else
+    {
+        const unsigned int vertCount = vertices->size() / ( subCylinders + 1 );
+        unsigned int vIdx = 0;
+        for( idx=0; idx <= subCylinders; idx++ )
+        {
+            osg::DrawElementsUShort* deus = new osg::DrawElementsUShort( GL_LINE_LOOP );
+            deus->reserve( vertCount );
+            unsigned int innerIdx;
+            for( innerIdx = 0; innerIdx < vertCount; innerIdx++ )
+            {
+                deus->push_back( vIdx );
+                vIdx++;
+            }
+            geometry->addPrimitiveSet( deus );
+        }
+
+        const unsigned int lineIndex = vertices->size() - vertCount;
+        osg::DrawElementsUShort* deusl = new osg::DrawElementsUShort( GL_LINES );
+        deusl->reserve( vertCount * 2 );
+        for( vIdx=0; vIdx<vertCount; vIdx++ )
+        {
+            deusl->push_back( vIdx );
+            deusl->push_back( vIdx + lineIndex );
+        }
+        geometry->addPrimitiveSet( deusl );
+    }
+
+    return( true );
+}
+
+osg::Drawable* osgDrawableFromBtCollisionShape( const btCylinderShape* btCylinder )
 {
     const osg::Vec3 defaultOrientation( 0., 0., 1. );
     osg::Matrix m;
@@ -575,7 +835,11 @@ osg::Geometry* osgGeometryFromBtCollisionShape( const btCylinderShape* btCylinde
     }
     const double radius( btCylinder->getRadius() );
 
-    return( osgwTools::makeOpenCylinder( m, length, radius, radius ) );
+    osg::ref_ptr<osg::Geometry>drawable=new osg::Geometry();
+    buildCylinderData( length, radius, radius ,  osg::Vec2s( 1, 8 ),drawable.get(),false);
+  osgUtil::TransformAttributeFunctor tf(m);
+        drawable->accept(tf);
+    return drawable;//( osgwTools::makeOpenCylinder( m, length, radius, radius ) );
 }
 
 

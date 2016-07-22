@@ -19,7 +19,7 @@
  *************** <auto-copyright.pl END do not edit this line> ***************/
 
 #include <osgbCollision/CollectVerticesVisitor.h>
-#include <osgwTools/AbsoluteModelTransform.h>
+ #include <osgbCollision/AbsoluteModelTransform.h>
 #include <osg/Transform>
 #include <osg/Geometry>
 #include <osg/Geode>
@@ -48,7 +48,7 @@ void CollectVerticesVisitor::reset()
 void CollectVerticesVisitor::apply( osg::Transform& node )
 {
     // Override apply(Transform&) to avoid processing AMT nodes.
-    const bool nonAMT = ( dynamic_cast< osgwTools::AbsoluteModelTransform* >( &node ) == NULL );
+    const bool nonAMT = ( dynamic_cast< osgbCollision::AbsoluteModelTransform* >( &node ) == NULL );
     if( nonAMT )
         _localNodePath.push_back( &node );
 

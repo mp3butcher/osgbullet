@@ -17,7 +17,23 @@
  * Boston, MA 02111-1307, USA.
  *
  *************** <auto-copyright.pl END do not edit this line> ***************/
+#ifndef OLDSAVRESTOREMODEL
+///written by J.Valentin
+///use experimental osgdb_serializer (exploiting bullet serialization model)
 
+
+
+int main( int argc, char** argv )
+{
+    osg::ArgumentParser arguments( &argc, argv );
+    const bool debugDisplay( arguments.find( "--debug" ) > 0 );
+
+
+
+    return 0;
+}
+
+#else
 #include <osgDB/ReadFile>
 #include <osgDB/FileUtils>
 #include <osgViewer/Viewer>
@@ -35,7 +51,7 @@
 #include <osgbCollision/GLDebugDrawer.h>
 #include <osgbCollision/Utils.h>
 
-#include <osgbInteraction/SaveRestoreHandler.h>
+/#include <osgbInteraction/SaveRestoreHandler.h>
 #include <osgbInteraction/DragHandler.h>
 
 #include <osgwTools/InsertRemove.h>
@@ -190,7 +206,7 @@ int main( int argc, char** argv )
     viewer.setSceneData( root.get() );
 
     osgGA::TrackballManipulator* tb = new osgGA::TrackballManipulator;
-    //tb->setHomePosition( osg::Vec3( 0., -8., 2. ), osg::Vec3( 0., 0., 1. ), osg::Vec3( 0., 0., 1. ) ); 
+    //tb->setHomePosition( osg::Vec3( 0., -8., 2. ), osg::Vec3( 0., 0., 1. ), osg::Vec3( 0., 0., 1. ) );
     viewer.setCameraManipulator( tb );
     viewer.getCamera()->setClearColor( osg::Vec4( .5, .5, .5, 1. ) );
 
@@ -239,3 +255,4 @@ Use the --debug command line option to enable debug collision object display.
 \li ctrl-leftmouse: Select and drag an object.
 
 */
+#endif

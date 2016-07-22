@@ -22,13 +22,100 @@
 #define __OSGBDYNAMICS_RIGID_BODY_H__ 1
 
 #include <osgbDynamics/Export.h>
+#include <osg/NodeCallback>
 #include <osgbDynamics/CreationRecord.h>
 #include <btBulletDynamicsCommon.h>
+#include <BulletSoftBody/btSoftBody.h>
 
 
 namespace osgbDynamics
 {
+/** use to filter collisions  **/
+class World;
+typedef unsigned int CollisionMaskType;
+class OSGBDYNAMICS_EXPORT CollisionMask: public osg::Object{
+public:
+    META_Object(osgbDynamics,CollisionMask)
+    CollisionMask(): _group(0),_mask(0){}
+    CollisionMask( const CollisionMask& copy, const osg::CopyOp& copyop=osg::CopyOp::SHALLOW_COPY ):osg::Object(copy,copyop),_group(copy._group),_mask(copy._mask){    }
 
+    inline CollisionMaskType getGroupID()const{return _group;}
+    inline void setGroupID( CollisionMaskType g){_group=g;}
+    inline CollisionMaskType getMask()const{return _mask;}
+    inline void setMask( CollisionMaskType g){_mask=g;}
+protected:
+    CollisionMaskType _group,_mask;
+};
+
+class RigidBody;
+class SoftBody;
+class OSGBDYNAMICS_EXPORT PhysicalObject : public osg::NodeCallback
+{
+public:
+    PhysicalObject():_parentWorld(0){};
+    PhysicalObject( const PhysicalObject& copy, const osg::CopyOp& copyop=osg::CopyOp::SHALLOW_COPY );
+
+    virtual bool isSameKindAs( const osg::Object* obj ) const { return dynamic_cast<const PhysicalObject*>(obj)!=NULL; }
+    virtual const char* libraryName () const { return "osgbDynamics"; }
+    virtual const char* className () const { return "PhysicalObject"; }
+
+    virtual RigidBody * asRigidBody(){return 0;}
+    virtual SoftBody * asSoftBody(){return 0;}
+
+    void operator()( osg::Node* node, osg::NodeVisitor* nv );
+protected:
+~PhysicalObject();
+World * _parentWorld;
+
+};
+
+class OSGBDYNAMICS_EXPORT RigidBody : public PhysicalObject
+{
+public:
+    RigidBody();
+    RigidBody( const RigidBody& copy, const osg::CopyOp& copyop=osg::CopyOp::SHALLOW_COPY );
+
+    virtual bool isSameKindAs( const osg::Object* obj ) const { return dynamic_cast<const RigidBody*>(obj)!=NULL; }
+    virtual const char* libraryName () const { return "osgbDynamics"; }
+    virtual const char* className () const { return "RigidBody"; }
+
+    virtual RigidBody * asRigidBody(){return this;}
+
+
+    void setRigidBody(btRigidBody*body){_body=body;}
+   btRigidBody* getRigidBody()const {return _body;}
+protected:
+~RigidBody();
+
+osgbDynamics::CreationRecord* cr;
+
+btRigidBody* _body;
+btCollisionShape* _shape ;
+
+
+};
+class OSGBDYNAMICS_EXPORT SoftBody : public PhysicalObject
+{
+public:
+    SoftBody();
+    SoftBody( const SoftBody& copy, const osg::CopyOp& copyop=osg::CopyOp::SHALLOW_COPY );
+
+    virtual bool isSameKindAs( const osg::Object* obj ) const { return dynamic_cast<const SoftBody*>(obj)!=NULL; }
+    virtual const char* libraryName () const { return "osgbDynamics"; }
+    virtual const char* className () const { return "SoftBody"; }
+    virtual SoftBody * asSoftBody(){return this;}
+    void setSoftBody(btSoftBody*body){_body=body;}
+   btSoftBody* getRigidBody()const {return _body;}
+protected:
+~SoftBody();
+
+osgbDynamics::CreationRecord* cr;
+btSoftBody *_body;
+
+btCollisionShape* _shape ;
+
+
+};
 
 /** \defgroup rigidbody Rigid Body Creation
 \brief Convenience routines for creating Bullet rigid bodies from scene graphs.
@@ -122,7 +209,7 @@ Uses the osgbCollision::ComputeShapeVisitor to create a btCompoundShape from Cre
 Currently, a shape per Geode is created. CreationRecord::_shapeType specifies the shape type created per Geode.
 If CreationRecord::_shapeType is CYLINDER_SHAPE_PROXYTYPE, CreationRecord::_axis specifies the cylinder major axis.
 */
-OSGBDYNAMICS_EXPORT btRigidBody* createRigidBody( osgbDynamics::CreationRecord* cr );
+btRigidBody* OSGBDYNAMICS_EXPORT createRigidBody( osgbDynamics::CreationRecord* cr );
 
 /** \overload
 <p>
@@ -130,7 +217,7 @@ Use this function to create a rigid body if you have already created the collisi
 This is useful for sharing collision shapes.
 </p>
 */
-OSGBDYNAMICS_EXPORT btRigidBody* createRigidBody( osgbDynamics::CreationRecord* cr, btCollisionShape* shape );
+ btRigidBody* OSGBDYNAMICS_EXPORT createRigidBody( osgbDynamics::CreationRecord* cr, btCollisionShape* shape );
 
 
 /**@}*/

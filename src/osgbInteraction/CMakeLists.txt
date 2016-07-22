@@ -20,7 +20,7 @@ set( LIB_PUBLIC_HEADERS
     ${HEADER_PATH}/GestureHandler.h
     ${HEADER_PATH}/HandNode.h
     ${HEADER_PATH}/HandTestEventHandler.h
-    ${HEADER_PATH}/SaveRestoreHandler.h
+    #${HEADER_PATH}/SaveRestoreHandler.h
 )
 
 set( _osgBulletSourceFiles
@@ -31,7 +31,7 @@ set( _osgBulletSourceFiles
     GestureHandler.cpp
     HandNode.cpp
     HandTestEventHandler.cpp
-    SaveRestoreHandler.cpp
+   # SaveRestoreHandler.cpp
 )
 
 add_library( ${LIB_NAME}

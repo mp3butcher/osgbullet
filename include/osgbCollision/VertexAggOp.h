@@ -23,7 +23,7 @@
 
 
 #include <osgbCollision/Export.h>
-#include <osgwTools/GeometryOperation.h>
+#include <osgbCollision/GeometryOperation.h>
 #include <osg/CopyOp>
 #include <osg/Object>
 #include <osg/Vec3>
@@ -41,7 +41,7 @@ struct Octree;
 low-resolution collision shapes.
 
 */
-class OSGBCOLLISION_EXPORT VertexAggOp : public osgwTools::GeometryOperation
+class OSGBCOLLISION_EXPORT VertexAggOp : public osgbCollision::GeometryOperation
 {
 public:
     VertexAggOp();
@@ -64,7 +64,7 @@ public:
 
     typedef enum {
         GEOMETRIC_MEAN,
-        BOUNDING_BOX_CENTER,
+        BOUNDING_BOX_CENTER
     } PointSelectionMethod;
 
     void setPointSelectionMethod( PointSelectionMethod psm ) { _psm = psm; }

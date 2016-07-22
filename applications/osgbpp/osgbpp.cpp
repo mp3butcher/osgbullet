@@ -31,7 +31,7 @@
 #include <osgbCollision/GLDebugDrawer.h>
 #include <osgbCollision/Version.h>
 #include <osgbDynamics/MotionState.h>
-#include <osgbDynamics/PhysicsState.h>
+//#include <osgbDynamics/PhysicsState.h>
 #include <osgbCollision/CollisionShapes.h>
 #include <osgbCollision/RefBulletObject.h>
 #include <osgbDynamics/RigidBody.h>

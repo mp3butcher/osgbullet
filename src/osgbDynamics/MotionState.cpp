@@ -22,7 +22,7 @@
 #include <osgbCollision/Utils.h>
 #include <osgbDynamics/TripleBuffer.h>
 
-#include <osgwTools/AbsoluteModelTransform.h>
+#include <osgbCollision/AbsoluteModelTransform.h>
 
 #include <osg/MatrixTransform>
 #include <osg/Notify>
@@ -179,8 +179,8 @@ MotionState::setTransform( osg::Transform* transform )
 {
     if( transform->asMatrixTransform() != NULL )
         _mt = transform->asMatrixTransform();
-    else if( dynamic_cast< osgwTools::AbsoluteModelTransform* >( transform ) )
-        _amt = static_cast< osgwTools::AbsoluteModelTransform* >( transform );
+    else if( dynamic_cast< osgbCollision::AbsoluteModelTransform* >( transform ) )
+        _amt = static_cast< osgbCollision::AbsoluteModelTransform* >( transform );
     else
         osg::notify( osg::WARN ) << "MotionState: Unsupported transform type: " << transform->className() << std::endl;
 }

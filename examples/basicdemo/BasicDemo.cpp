@@ -37,6 +37,7 @@
 #include <osgbCollision/CollisionShapes.h>
 #include <osgbCollision/RefBulletObject.h>
 #include <osgbDynamics/RigidBodyAnimation.h>
+#include <osgbDynamics/World.h>
 
 osg::AnimationPath * createAnimationPath( const osg::Vec3 & center,
                                           float radius,
@@ -130,12 +131,12 @@ btVector3 randomBVec3InRange( std::pair< btVector3, btVector3 > range =
                             btVector3(  1,  1,  1) ) )
 {
     return(
-        btVector3( 
+        btVector3(
             randomFloatInRange(
                 std::pair< float, float >( range.first[0], range.second[0] ) ),
-            randomFloatInRange(                                                
+            randomFloatInRange(
                 std::pair< float, float >( range.first[1], range.second[1] ) ),
-            randomFloatInRange(                                                
+            randomFloatInRange(
                 std::pair< float, float >( range.first[2], range.second[2] ) ) ) );
 }
 
@@ -225,10 +226,10 @@ osg::MatrixTransform * createModel( btDynamicsWorld * dynamicsWorld )
     body->setLinearVelocity( btVector3( -5, -1, 0 ) );
     body->setAngularVelocity( btVector3( 1, 0, 0 ) );
     dynamicsWorld->addRigidBody( body );
-    
+
     // kick thing around from time to time.
     node->setUpdateCallback( new GliderUpdateCallback( body ) );
-    
+
     return( node.release() );
 }
 
@@ -259,45 +260,78 @@ int main( int argc,
     osg::MatrixTransform * ground;
     btRigidBody * groundBody;
 
+   osgbDynamics:: World * osgbtworld=new osgbDynamics::World;
+    osgbtworld->setDynamicsWorld(dynamicsWorld);
+    root->addUpdateCallback(osgbtworld);
+
     float thin = .01;
     ground = createOSGBox( osg::Vec3( 10, 10, thin ) );
     root->addChild( ground );
     groundBody = createBTBox( ground, osg::Vec3( 0, 0, -10 ) );
+    {
+  osgbDynamics:: RigidBody* groundBodyrig=new osgbDynamics::RigidBody();
+    groundBodyrig->setRigidBody( groundBody);
+    ground->addUpdateCallback(groundBodyrig);
     dynamicsWorld->addRigidBody( groundBody );
-
+}
     ground = createOSGBox( osg::Vec3( 10, thin, 5 ) );
     root->addChild( ground );
     groundBody = createBTBox( ground, osg::Vec3( 0, 10, -5 ) );
+{
+  osgbDynamics:: RigidBody* groundBodyrig=new osgbDynamics::RigidBody();
+    groundBodyrig->setRigidBody( groundBody);
+    ground->addUpdateCallback(groundBodyrig);
     dynamicsWorld->addRigidBody( groundBody );
+}
 
     ground = createOSGBox( osg::Vec3( 10, thin, 5 ) );
     root->addChild( ground );
     groundBody = createBTBox( ground, osg::Vec3( 0, -10, -5 ) );
+ {
+  osgbDynamics:: RigidBody* groundBodyrig=new osgbDynamics::RigidBody();
+    groundBodyrig->setRigidBody( groundBody);
+    ground->addUpdateCallback(groundBodyrig);
     dynamicsWorld->addRigidBody( groundBody );
+}
 
     ground = createOSGBox( osg::Vec3( thin, 10, 5 ) );
     root->addChild( ground );
     groundBody = createBTBox( ground, osg::Vec3( 10, 0, -5 ) );
+{
+  osgbDynamics:: RigidBody* groundBodyrig=new osgbDynamics::RigidBody();
+    groundBodyrig->setRigidBody( groundBody);
+    ground->addUpdateCallback(groundBodyrig);
     dynamicsWorld->addRigidBody( groundBody );
+}
 
     ground = createOSGBox( osg::Vec3( thin, 10, 5 ) );
     root->addChild( ground );
     groundBody = createBTBox( ground, osg::Vec3( -10, 0, -5 ) );
+{
+  osgbDynamics:: RigidBody* groundBodyrig=new osgbDynamics::RigidBody();
+    groundBodyrig->setRigidBody( groundBody);
+    ground->addUpdateCallback(groundBodyrig);
     dynamicsWorld->addRigidBody( groundBody );
+}
     /* END: Create environment boxes */
 
     /* BEGIN: Create animated box */
     /* OSG Code */
     osg::MatrixTransform * box = createOSGBox( osg::Vec3( .3, .3, .3 ) );
     osg::AnimationPathCallback * apc = new osg::AnimationPathCallback( createAnimationPath( osg::Vec3( 0, 0, -9.25 ), 9.4, 6 ), 0, 1 );
-    box->setUpdateCallback( apc );
+    box->addUpdateCallback( apc );
     root->addChild( box );
 
     /* Bullet Code */
     btRigidBody * boxBody = createBTBox( box, osg::Vec3( -9, -3, -9 ) );
     boxBody->setCollisionFlags( boxBody->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT );
     boxBody->setActivationState( DISABLE_DEACTIVATION );
+  {
+  osgbDynamics:: RigidBody* boxBodyrig=new osgbDynamics::RigidBody();
+    boxBodyrig->setRigidBody( boxBody);
+    ground->addUpdateCallback(boxBodyrig);
     dynamicsWorld->addRigidBody( boxBody );
+}
 
     /* osgBullet Code */
     osgbCollision::RefBulletObject< btRigidBody >* boxRigid =
@@ -314,13 +348,16 @@ int main( int argc,
     double currSimTime = viewer.getFrameStamp()->getSimulationTime();;
     double prevSimTime = viewer.getFrameStamp()->getSimulationTime();
     viewer.realize();
-    while( !viewer.done() )
+
+
+    viewer.run();
+    /*while( !viewer.done() )
     {
         currSimTime = viewer.getFrameStamp()->getSimulationTime();
         dynamicsWorld->stepSimulation( currSimTime - prevSimTime );
         prevSimTime = currSimTime;
         viewer.frame();
-    }
+    }*/
 
     return( 0 );
 }
