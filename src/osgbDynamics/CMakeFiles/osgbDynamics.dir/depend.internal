@@ -978,6 +978,7 @@ src/osgbDynamics/CMakeFiles/osgbDynamics.dir/RigidBody.cpp.o
  /home/pascal/SRC/bullet3/src/BulletDynamics/Vehicle/btVehicleRaycaster.h
  /home/pascal/SRC/bullet3/src/BulletDynamics/Vehicle/btWheelInfo.h
  /home/pascal/SRC/bullet3/src/BulletSoftBody/btSoftBody.h
+ /home/pascal/SRC/bullet3/src/BulletSoftBody/btSoftRigidDynamicsWorld.h
  /home/pascal/SRC/bullet3/src/BulletSoftBody/btSparseSDF.h
  /home/pascal/SRC/bullet3/src/LinearMath/btAabbUtil2.h
  /home/pascal/SRC/bullet3/src/LinearMath/btAlignedAllocator.h

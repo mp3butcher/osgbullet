@@ -44,11 +44,11 @@
 #include <osgbCollision/Utils.h>
 #include <osgbInteraction/DragHandler.h>
 #include <osgbInteraction/LaunchHandler.h>
-#include <osgbInteraction/SaveRestoreHandler.h>
-
+//#include <osgbInteraction/SaveRestoreHandler.h>
+/*
 #include <osgwTools/InsertRemove.h>
 #include <osgwTools/FindNamedNode.h>
-#include <osgwTools/Version.h>
+#include <osgwTools/Version.h>*/
 
 #include <btBulletDynamicsCommon.h>
 
@@ -57,6 +57,132 @@
 #include <map>
 
 
+
+class FindNamedNode : public osg::NodeVisitor
+{
+public:
+    /**
+    @param name Name of the Node to search for.
+    */
+    FindNamedNode( const std::string& name, const osg::NodeVisitor::TraversalMode travMode=osg::NodeVisitor::TRAVERSE_ACTIVE_CHILDREN );
+    ~FindNamedNode();
+
+    typedef std::pair< osg::Node*, osg::NodePath > NodeAndPath;
+    typedef std::vector< NodeAndPath > NodeAndPathList;
+    NodeAndPathList _napl;
+
+    void reset();
+
+    /**
+    Algorithm for matching the specified name. Possible future
+    work: support for case-insensitive matching.
+    */
+    typedef enum {
+        EXACT_MATCH,
+        CONTAINS
+    } MatchMethod;
+    /**
+    Specifies the match algorithm.
+    @param method The match algorithm. The default is EXACT_MATCH
+    */
+    void setMatchMethod( MatchMethod method );
+    /**
+    Gets the match algorithm.
+    */
+    MatchMethod getMatchMethod() const;
+
+    /**
+    Controls whether the named Node is included at the end of
+    the NodePaths in _napl.
+    @param includeTargetNode If false, don't include the named Node
+    in the returned NodePaths. The default is true (include the named Node
+    in the paths).
+    */
+    void setPathsIncludeTargetNode( bool includeTargetNode );
+    /**
+    Gets the current setting for including the named Node in the
+    returned NodePaths.
+    */
+    bool getPathsIncludeTargetNode() const;
+
+    /**
+    Overrides of base class apply() method.
+    */
+    void apply( osg::Node& node );
+
+protected:
+    std::string _name;
+
+    MatchMethod _method;
+    bool _includeTargetNode;
+};
+
+FindNamedNode::FindNamedNode( const std::string& name, const osg::NodeVisitor::TraversalMode travMode )
+  : osg::NodeVisitor( travMode ),
+    _name( name ),
+    _method( EXACT_MATCH ),
+    _includeTargetNode( true )
+{
+}
+
+FindNamedNode::~FindNamedNode()
+{
+}
+
+void
+FindNamedNode::reset()
+{
+    _napl.clear();
+}
+
+void
+FindNamedNode::setMatchMethod( MatchMethod method )
+{
+    _method = method;
+}
+FindNamedNode::MatchMethod
+FindNamedNode::getMatchMethod() const
+{
+    return( _method );
+}
+
+void
+FindNamedNode::setPathsIncludeTargetNode( bool includeTargetNode )
+{
+    _includeTargetNode = includeTargetNode;
+}
+bool
+FindNamedNode::getPathsIncludeTargetNode() const
+{
+    return( _includeTargetNode );
+}
+
+
+void
+FindNamedNode::apply( osg::Node& node )
+{
+    bool match = (
+        ( ( _method == EXACT_MATCH ) &&
+            ( node.getName() == _name ) ) ||
+        ( ( _method == CONTAINS ) &&
+            ( node.getName().find( _name ) != std::string::npos ) ) );
+
+    if( match )
+    {
+        // Copy the NodePath, so we can alter it if necessary.
+        osg::NodePath np = getNodePath();
+
+        if( !_includeTargetNode )
+            // Calling code has requested that the target node
+            // be removed from the node paths.
+            np.pop_back();
+
+        NodeAndPath nap( &node, np );
+        _napl.push_back( nap );
+    }
+
+    traverse( node );
+}
 
 /** \cond */
 
@@ -78,11 +204,11 @@ public:
 protected:
     struct ViewData : public osgShadow::StandardShadowMap::ViewData
     {
-        virtual void aimShadowCastingCamera( 
+        virtual void aimShadowCastingCamera(
             const osg::BoundingSphere& bounds,
             const osg::Light* light,
             const osg::Vec4& worldLightPos,
-            const osg::Vec3& worldLightDir,                                       
+            const osg::Vec3& worldLightDir,
             const osg::Vec3& worldLightUp = osg::Vec3( 0, 1,0 ) )
         {
             // For out case, we have a point light source, but we always want
@@ -152,12 +278,30 @@ void makeStaticObject( btDiscreteDynamicsWorld* bw, osg::Node* node, const osg::
     standBody = rb;
 }
 
-btRigidBody* drawerBody;
-osg::Transform* makeDrawer( btDiscreteDynamicsWorld* bw, osgbInteraction::SaveRestoreHandler* srh, osg::Node* node, const osg::Matrix& m )
+void
+insertAbove( osg::Node* node, osg::Group* newParent )
 {
-    osgwTools::AbsoluteModelTransform* amt = new osgwTools::AbsoluteModelTransform;
+    // Don't let the node get deleted when we remove it from all its parents.
+    // Equivalent to explicit call to node->ref(), then node->unref() at end of function.
+    osg::ref_ptr< osg::Node > nodeHolder( node );
+
+    osg::Node::ParentList pl = node->getParents();
+    osg::Node::ParentList::iterator it;
+    for( it = pl.begin(); it != pl.end(); it++ )
+    {
+        osg::Group* oldParent( *it );
+        oldParent->addChild( newParent );
+        oldParent->removeChild( node );
+    }
+    newParent->addChild( node );
+}
+
+btRigidBody* drawerBody;
+osg::Transform* makeDrawer( btDiscreteDynamicsWorld* bw/*, osgbInteraction::SaveRestoreHandler* srh*/, osg::Node* node, const osg::Matrix& m )
+{
+    osgbCollision::AbsoluteModelTransform* amt = new osgbCollision::AbsoluteModelTransform;
     amt->setDataVariance( osg::Object::DYNAMIC );
-    osgwTools::insertAbove( node, amt );
+     insertAbove( node, amt );
 
     osg::ref_ptr< osgbDynamics::CreationRecord > cr = new osgbDynamics::CreationRecord;
     cr->_sceneGraph = amt;
@@ -175,7 +319,7 @@ osg::Transform* makeDrawer( btDiscreteDynamicsWorld* bw, osgbInteraction::SaveRe
     // Save RB in global, as AMT UserData (for DragHandler), and in SaveRestoreHandler.
     drawerBody = rb;
     amt->setUserData( new osgbCollision::RefRigidBody( rb ) );
-    srh->add( "gate", rb );
+    //srh->add( "gate", rb );
 
     return( amt );
 }
@@ -201,7 +345,7 @@ btDiscreteDynamicsWorld* initPhysics()
 
 osg::Node* findNamedNode( osg::Node* model, const std::string& name, osg::Matrix& xform )
 {
-    osgwTools::FindNamedNode fnn( name );
+    FindNamedNode fnn( name );
     model->accept( fnn );
     if( fnn._napl.empty() )
     {
@@ -311,11 +455,10 @@ int main( int argc, char** argv )
     if( ( standNode == NULL ) || ( drawerNode == NULL ) )
         return( 1 );
 
-    osg::ref_ptr< osgbInteraction::SaveRestoreHandler > srh = new
-        osgbInteraction::SaveRestoreHandler;
+//    osg::ref_ptr< osgbInteraction::SaveRestoreHandler > srh = new        osgbInteraction::SaveRestoreHandler;
 
     // Make Bullet rigid bodies and collision shapes for the drawer...
-    makeDrawer( bulletWorld, srh.get(), drawerNode, drawerXform );
+    makeDrawer( bulletWorld/*, srh.get()*/, drawerNode, drawerXform );
     // ...and the stand.
     makeStaticObject( bulletWorld, standNode, standXform );
 
@@ -327,7 +470,7 @@ int main( int argc, char** argv )
     groundRoot->setNodeMask( SHADOW_RECEIVER );
     groundMaterial( groundRoot );
     root->addChild( groundRoot );
-    
+
 
     // create slider constraint between drawer and stand, and add it to world.
     // Note: Bullet slider is always along x axis. Alter this behavior with reference frames.
@@ -431,7 +574,7 @@ int main( int argc, char** argv )
     viewer.setSceneData( sceneRoot );
 
     osgGA::TrackballManipulator* tb = new osgGA::TrackballManipulator;
-    tb->setHomePosition( osg::Vec3( .8, -5., 1.6 ), osg::Vec3( 0., 0., .5 ), osg::Vec3( 0., 0., 1. ) ); 
+    tb->setHomePosition( osg::Vec3( .8, -5., 1.6 ), osg::Vec3( 0., 0., .5 ), osg::Vec3( 0., 0., 1. ) );
     viewer.setCameraManipulator( tb );
     viewer.getCamera()->setClearColor( osg::Vec4( .5, .5, .5, 1. ) );
 
@@ -456,9 +599,9 @@ int main( int argc, char** argv )
         viewer.addEventHandler( lh );
     }
 
-    srh->setLaunchHandler( lh );
+/*    srh->setLaunchHandler( lh );
     srh->capture();
-    viewer.addEventHandler( srh.get() );
+    viewer.addEventHandler( srh.get() );*/
     viewer.addEventHandler( new osgbInteraction::DragHandler(
         bulletWorld, viewer.getCamera() ) );
 

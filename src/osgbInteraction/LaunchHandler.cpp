@@ -23,14 +23,15 @@
 #include <osgbDynamics/RigidBody.h>
 #include <osgbCollision/CollisionShapes.h>
 #include <osgbCollision/RefBulletObject.h>
-#include <osgwTools/AbsoluteModelTransform.h>
+#include <osgbCollision/AbsoluteModelTransform.h>
 #include <osgbCollision/Utils.h>
 #include <osgbDynamics/PhysicsThread.h>
 #include <osgbDynamics/TripleBuffer.h>
 #include <osg/Group>
 #include <osg/Camera>
 #include <osg/Geode>
-#include <osgwTools/Shapes.h>
+#include <osg/ShapeDrawable>
+//#include <osgbCollision/Shapes.h>
 
 
 namespace osgbInteraction
@@ -52,7 +53,8 @@ LaunchHandler::LaunchHandler( btDynamicsWorld* dw, osg::Group* attachPoint, osg:
     // Make the default launch model: Sphere with radius 1.0.
     osg::Geode* geode = new osg::Geode;
     const double radius( 1.0 );
-    geode->addDrawable( osgwTools::makeGeodesicSphere( radius ) );
+
+    geode->addDrawable( new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(),radius)));//osgwTools::makeGeodesicSphere( radius ) );
     _launchModel = geode;
     _launchCollisionShape = new btSphereShape( radius );
     _ownsCollisionShape = true;
@@ -120,7 +122,7 @@ bool LaunchHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAd
     osg::Vec3 launchDir = osg::Vec3( wc[0], wc[1], wc[2] ) - launchPos;
     launchDir.normalize();
 
-    osg::ref_ptr< osgwTools::AbsoluteModelTransform > amt = new osgwTools::AbsoluteModelTransform;
+    osg::ref_ptr< osgbCollision::AbsoluteModelTransform > amt = new osgbCollision::AbsoluteModelTransform;
     amt->setDataVariance( osg::Object::DYNAMIC );
     amt->addChild( _launchModel.get() );
 

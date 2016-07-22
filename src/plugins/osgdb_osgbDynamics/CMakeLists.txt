@@ -6,7 +6,7 @@ _osgBulletPlugin( ${LIB_NAME}
     dotosgCreationRecord.cpp
     dotosgMatrixIO.cpp
     dotosgMatrixIO.h
-    dotosgPhysicsData.cpp
+ #   dotosgPhysicsData.cpp
 )
 
 INCLUDE( ModuleInstall REQUIRED )

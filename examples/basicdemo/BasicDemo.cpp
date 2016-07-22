@@ -225,10 +225,14 @@ osg::MatrixTransform * createModel( btDynamicsWorld * dynamicsWorld )
     btRigidBody * body = new btRigidBody( rbinfo );
     body->setLinearVelocity( btVector3( -5, -1, 0 ) );
     body->setAngularVelocity( btVector3( 1, 0, 0 ) );
-    dynamicsWorld->addRigidBody( body );
+
+      osgbDynamics:: RigidBody* gliderrig=new osgbDynamics::RigidBody();
+    gliderrig->setRigidBody( body);
+    node->addUpdateCallback(gliderrig);
+    //dynamicsWorld->addRigidBody( body );
 
     // kick thing around from time to time.
-    node->setUpdateCallback( new GliderUpdateCallback( body ) );
+    node->addUpdateCallback( new GliderUpdateCallback( body ) );
 
     return( node.release() );
 }
@@ -272,7 +276,7 @@ int main( int argc,
   osgbDynamics:: RigidBody* groundBodyrig=new osgbDynamics::RigidBody();
     groundBodyrig->setRigidBody( groundBody);
     ground->addUpdateCallback(groundBodyrig);
-    dynamicsWorld->addRigidBody( groundBody );
+    //dynamicsWorld->addRigidBody( groundBody );
 }
     ground = createOSGBox( osg::Vec3( 10, thin, 5 ) );
     root->addChild( ground );
@@ -281,7 +285,7 @@ int main( int argc,
   osgbDynamics:: RigidBody* groundBodyrig=new osgbDynamics::RigidBody();
     groundBodyrig->setRigidBody( groundBody);
     ground->addUpdateCallback(groundBodyrig);
-    dynamicsWorld->addRigidBody( groundBody );
+    //dynamicsWorld->addRigidBody( groundBody );
 }
 
     ground = createOSGBox( osg::Vec3( 10, thin, 5 ) );
@@ -291,7 +295,7 @@ int main( int argc,
   osgbDynamics:: RigidBody* groundBodyrig=new osgbDynamics::RigidBody();
     groundBodyrig->setRigidBody( groundBody);
     ground->addUpdateCallback(groundBodyrig);
-    dynamicsWorld->addRigidBody( groundBody );
+    //dynamicsWorld->addRigidBody( groundBody );
 }
 
     ground = createOSGBox( osg::Vec3( thin, 10, 5 ) );
@@ -301,7 +305,7 @@ int main( int argc,
   osgbDynamics:: RigidBody* groundBodyrig=new osgbDynamics::RigidBody();
     groundBodyrig->setRigidBody( groundBody);
     ground->addUpdateCallback(groundBodyrig);
-    dynamicsWorld->addRigidBody( groundBody );
+    //dynamicsWorld->addRigidBody( groundBody );
 }
 
     ground = createOSGBox( osg::Vec3( thin, 10, 5 ) );
@@ -311,7 +315,7 @@ int main( int argc,
   osgbDynamics:: RigidBody* groundBodyrig=new osgbDynamics::RigidBody();
     groundBodyrig->setRigidBody( groundBody);
     ground->addUpdateCallback(groundBodyrig);
-    dynamicsWorld->addRigidBody( groundBody );
+    //dynamicsWorld->addRigidBody( groundBody );
 }
     /* END: Create environment boxes */
 
@@ -330,7 +334,7 @@ int main( int argc,
   osgbDynamics:: RigidBody* boxBodyrig=new osgbDynamics::RigidBody();
     boxBodyrig->setRigidBody( boxBody);
     ground->addUpdateCallback(boxBodyrig);
-    dynamicsWorld->addRigidBody( boxBody );
+    //dynamicsWorld->addRigidBody( boxBody );
 }
 
     /* osgBullet Code */

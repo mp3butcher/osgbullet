@@ -28,7 +28,7 @@
 #include <osg/MatrixTransform>
 #include <osg/Matrix>
 #include <osg/Point>
-#include <osgwTools/GeometryModifier.h>
+#include <osgbCollision/GeometryModifier.h>
 #include <osgbCollision/VertexAggOp.h>
 #include <osgbCollision/CollisionShapes.h>
 #include <osgbCollision/Utils.h>
@@ -420,7 +420,7 @@ protected:
         // Deep copy, so we don't destroy the visual model.
         osg::ref_ptr< osg::Group > aggGrp = new osg::Group( *tempRoot, osg::CopyOp::DEEP_COPY_ALL );
 
-        osgwTools::GeometryModifier gm( new osgbCollision::VertexAggOp );
+        osgbCollision::GeometryModifier gm( new osgbCollision::VertexAggOp );
         aggGrp->accept( gm );
         return( osgbCollision::btConvexHullCollisionShapeFromOSG( aggGrp.get() ) );
     }
@@ -909,7 +909,7 @@ HandNode::recoverFromPenetration()
         btBroadphasePair* collisionPair = &opc->getOverlappingPairArray()[ idx ];
         if( collisionPair->m_algorithm )
             collisionPair->m_algorithm->getAllContactManifolds( _manifoldArray );
-        
+
         for( int jdx=0; jdx < _manifoldArray.size(); jdx++ )
         {
             btPersistentManifold* manifold = _manifoldArray[ jdx ];

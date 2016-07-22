@@ -23,7 +23,7 @@
 #include <osgbDynamics/MotionState.h>
 #include <osgbDynamics/World.h>
 #include <osgbCollision/CollisionShapes.h>
-
+#include <BulletSoftBody/btSoftRigidDynamicsWorld.h>
 #include <osg/Node>
 #include <osg/MatrixTransform>
 #include <osg/BoundingSphere>
@@ -39,7 +39,7 @@ class FindParentVisitor : public osg::NodeVisitor
 {
 public:
     FindParentVisitor()
-    : osg::NodeVisitor(osg::NodeVisitor::TRAVERSE_PARENTS), foundWorld(NULL)  {}
+        : osg::NodeVisitor(osg::NodeVisitor::TRAVERSE_PARENTS), foundWorld(NULL)  {}
 
     void apply( osg::Node& node )
     {
@@ -61,23 +61,64 @@ public:
 void PhysicalObject::operator()( osg::Node* node, osg::NodeVisitor* nv )
 {
 
-        if ( !_parentWorld){
+    if ( !_parentWorld)
+    {
         FindParentVisitor fpv;
         node->accept(fpv);
         _parentWorld=fpv.foundWorld;
+        addPhysicalObjectToParentWorld();
+    }
+    traverse( node, nv );
+}
 
+PhysicalObject::~PhysicalObject() {}
+
+RigidBody::RigidBody() {}
+RigidBody::~RigidBody() {}
+void RigidBody::addPhysicalObjectToParentWorld()
+{
+    if(_parentWorld)
+    {
+        if(_body)
+            _parentWorld->getDynamicsWorld()->addRigidBody(_body);
+        else
+        {
+            OSG_WARN<<"RigidBody: btRigidBody is not setted"<<std::endl;
         }
-         traverse( node, nv );
- }
+    }
+    else
+    {
+        OSG_WARN<<"RigidBody: parentworld hasn't been found"<<std::endl;
+    }
 
- PhysicalObject::~PhysicalObject(){}
+}
+SoftBody::SoftBody() {}
+SoftBody::~SoftBody() {}
+void SoftBody::addPhysicalObjectToParentWorld()
+{
+    if(_parentWorld)
+    {
+        if(_body){
+            btSoftRigidDynamicsWorld* w=dynamic_cast<   btSoftRigidDynamicsWorld*>(_parentWorld->getDynamicsWorld());
+            if(w)
+            w->addSoftBody(_body);
+             else
+        {
+            OSG_WARN<<"SoftBody: try to add SoftBody to a rigid word"<<std::endl;
+        }
 
-RigidBody::RigidBody(){}
-RigidBody::~RigidBody(){}
+            }
+        else
+        {
+            OSG_WARN<<"SoftBody: btSoftBody is not setted"<<std::endl;
+        }
+    }
+    else
+    {
+        OSG_WARN<<"SoftBody: parentworld hasn't been found"<<std::endl;
+    }
 
-SoftBody::SoftBody(){}
-SoftBody::~SoftBody(){}
-
+}
 btRigidBody* createRigidBody( osgbDynamics::CreationRecord* cr )
 {
     osg::Node* root = cr->_sceneGraph;
@@ -157,7 +198,7 @@ btRigidBody* createRigidBody( osgbDynamics::CreationRecord* cr )
     else
     {
         shape = osgbCollision::btCompoundShapeFromOSGGeodes( tempMtRoot.get(),
-            cr->_shapeType, cr->_axis, static_cast< unsigned int >( cr->_reductionLevel ) );
+                cr->_shapeType, cr->_axis, static_cast< unsigned int >( cr->_reductionLevel ) );
     }
     if( shape == NULL )
     {
@@ -179,10 +220,10 @@ btRigidBody* createRigidBody( osgbDynamics::CreationRecord* cr, btCollisionShape
 
 
     osg::notify( osg::DEBUG_FP ) << "createRigidBody: Creating rigid body." << std::endl;
-	btVector3 localInertia( 0, 0, 0 );
+    btVector3 localInertia( 0, 0, 0 );
     const bool isDynamic = ( cr->_mass != 0.f );
-	if( isDynamic )
-		shape->calculateLocalInertia( cr->_mass, localInertia );
+    if( isDynamic )
+        shape->calculateLocalInertia( cr->_mass, localInertia );
 
     // Create MotionState to control OSG subgraph visual reprentation transform
     // from a Bullet world transform. To do this, the MotionState need the address
@@ -219,7 +260,7 @@ btRigidBody* createRigidBody( osgbDynamics::CreationRecord* cr, btCollisionShape
     if( cr->_angularDamping >= 0.f )
         rbInfo.m_angularDamping = cr->_angularDamping;
 
-	btRigidBody* rb = new btRigidBody( rbInfo );
+    btRigidBody* rb = new btRigidBody( rbInfo );
     if( rb == NULL )
     {
         osg::notify( osg::WARN ) << "createRigidBody: Created a NULL btRigidBody." << std::endl;

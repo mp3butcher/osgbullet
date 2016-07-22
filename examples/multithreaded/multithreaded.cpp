@@ -36,9 +36,9 @@
 #include <osgbDynamics/PhysicsThread.h>
 #include <osgbInteraction/DragHandler.h>
 #include <osgbInteraction/LaunchHandler.h>
-#include <osgbInteraction/SaveRestoreHandler.h>
+//#include <osgbInteraction/SaveRestoreHandler.h>
 
-#include <osgwTools/Shapes.h>
+//#include <osgwTools/Shapes.h>
 
 #include <btBulletDynamicsCommon.h>
 
@@ -73,10 +73,10 @@ btDiscreteDynamicsWorld* initPhysics()
 osg::ref_ptr< osg::Node > modelNode( NULL );
 
 osg::Transform*
-makeModel( const std::string& fileName, const int index, btDynamicsWorld* bw, osg::Vec3 pos, osgbInteraction::SaveRestoreHandler* srh )
+makeModel( const std::string& fileName, const int index, btDynamicsWorld* bw, osg::Vec3 pos/*, osgbInteraction::SaveRestoreHandler* srh */)
 {
     osg::Matrix m( osg::Matrix::translate( pos ) );
-    osg::ref_ptr< osgwTools::AbsoluteModelTransform > amt = new osgwTools::AbsoluteModelTransform;
+    osg::ref_ptr< osgbCollision::AbsoluteModelTransform > amt = new osgbCollision::AbsoluteModelTransform;
     amt->setDataVariance( osg::Object::DYNAMIC );
 
     if( !modelNode.valid() )
@@ -109,7 +109,7 @@ makeModel( const std::string& fileName, const int index, btDynamicsWorld* bw, os
 
     std::ostringstream ostr;
     ostr << fileName << index;
-    srh->add( ostr.str(), rb );
+   // srh->add( ostr.str(), rb );
 
     amt->setUserData( new osgbCollision::RefRigidBody( rb ) );
     bw->addRigidBody( rb );
@@ -118,12 +118,12 @@ makeModel( const std::string& fileName, const int index, btDynamicsWorld* bw, os
 }
 
 osg::MatrixTransform*
-makeCow( btDynamicsWorld* bw, osg::Vec3 pos, osgbInteraction::SaveRestoreHandler* srh )
+makeCow( btDynamicsWorld* bw, osg::Vec3 pos /*,osgbInteraction::SaveRestoreHandler* srh*/ )
 {
     osg::Matrix m( osg::Matrix::rotate( 1.5, osg::Vec3( 0., 0., 1. ) ) *
         osg::Matrix::translate( pos ) );
     osg::MatrixTransform* root = new osg::MatrixTransform( m );
-    osgwTools::AbsoluteModelTransform* amt = new osgwTools::AbsoluteModelTransform;
+    osgbCollision::AbsoluteModelTransform* amt = new osgbCollision::AbsoluteModelTransform;
     amt->setDataVariance( osg::Object::DYNAMIC );
     root->addChild( amt );
 
@@ -153,7 +153,7 @@ makeCow( btDynamicsWorld* bw, osg::Vec3 pos, osgbInteraction::SaveRestoreHandler
     body->setActivationState( DISABLE_DEACTIVATION );
     bw->addRigidBody( body );
 
-    srh->add( "cow", body );
+   // srh->add( "cow", body );
     amt->setUserData( new osgbCollision::RefRigidBody( body ) );
 
     return( root );
@@ -172,8 +172,7 @@ int main( int argc, char** argv )
     osg::Group* launchHandlerAttachPoint = new osg::Group;
     root->addChild( launchHandlerAttachPoint );
 
-    osg::ref_ptr< osgbInteraction::SaveRestoreHandler > srh = new
-        osgbInteraction::SaveRestoreHandler;
+//    osg::ref_ptr< osgbInteraction::SaveRestoreHandler > srh = new        osgbInteraction::SaveRestoreHandler;
 
     std::string fileName( "dice.osg" );
     if( argc > 1 )
@@ -197,7 +196,7 @@ int main( int argc, char** argv )
             for( x=xStart, xIdx=0; xIdx<xCount; x+=2.25, xIdx++ )
             {
                 osg::Vec3 pos( x, y, z );
-                root->addChild( makeModel( fileName, index++, bulletWorld, pos, srh.get() ) );
+                root->addChild( makeModel( fileName, index++, bulletWorld, pos/*, srh.get()*/ ) );
             }
         }
         xStart += 1.25;
@@ -208,7 +207,7 @@ int main( int argc, char** argv )
     }
 
     // Add a cow
-    root->addChild( makeCow( bulletWorld, osg::Vec3( -11., 6., 4. ), srh.get() ) );
+    root->addChild( makeCow( bulletWorld, osg::Vec3( -11., 6., 4. )/*, srh.get() */) );
 
     // Make ground.
     {
@@ -223,7 +222,7 @@ int main( int argc, char** argv )
     viewer.setSceneData( root );
 
     osgGA::TrackballManipulator* tb = new osgGA::TrackballManipulator;
-    tb->setHomePosition( osg::Vec3( 0., -26., 12. ), osg::Vec3( 0., 0., 2. ), osg::Vec3( 0., 0., 1. ) ); 
+    tb->setHomePosition( osg::Vec3( 0., -26., 12. ), osg::Vec3( 0., 0., 2. ), osg::Vec3( 0., 0., 1. ) );
     viewer.setCameraManipulator( tb );
 
     viewer.addEventHandler( new osgViewer::StatsHandler );
@@ -235,22 +234,22 @@ int main( int argc, char** argv )
         // Use a custom launch model: Sphere with radius 0.5 (instead of default 1.0).
         osg::Geode* geode = new osg::Geode;
         const double radius( .5 );
-        geode->addDrawable( osgwTools::makeGeodesicSphere( radius ) );
+        geode->addDrawable( new osg::ShapeDrawable(new osg::Sphere( osg::Vec3(),radius)));//osgwTools::makeGeodesicSphere( radius ) );
         lh->setLaunchModel( geode, new btSphereShape( radius ) );
         lh->setInitialVelocity( 50. );
 
         viewer.addEventHandler( lh );
     }
 
-    srh->setLaunchHandler( lh );
+  /*  srh->setLaunchHandler( lh );
     srh->capture();
-    viewer.addEventHandler( srh.get() );
+    viewer.addEventHandler( srh.get() );*/
     osgbInteraction::DragHandler* dh = new osgbInteraction::DragHandler(
         bulletWorld, viewer.getCamera() );
     viewer.addEventHandler( dh );
 
     lh->setThreadedPhysicsSupport( &pt, &tBuf, &msl );
-    srh->setThreadedPhysicsSupport( &pt );
+   // srh->setThreadedPhysicsSupport( &pt );
     dh->setThreadedPhysicsSupport( &pt );
 
 

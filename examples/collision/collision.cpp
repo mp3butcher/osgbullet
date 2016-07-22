@@ -28,9 +28,9 @@
 #include <osgGA/GUIEventHandler>
 #include <osg/MatrixTransform>
 #include <osg/Geode>
-#include <osgwTools/Shapes.h>
-#include <osgwTools/Version.h>
-
+//#include <osgwTools/Shapes.h>
+//#include <osgwTools/Version.h
+#include <osg/ShapeDrawable>
 #include <osg/io_utils>
 #include <iostream>
 
@@ -108,7 +108,7 @@ osg::Node* createScene( btCollisionWorld* cw, MoveManipulator* mm, osg::Argument
 
     // Create a static box
     osg::Geode* geode = new osg::Geode;
-    geode->addDrawable( osgwTools::makeBox( osg::Vec3( .5, .5, .5 ) ) );
+    geode->addDrawable( /*osgwTools::makeBox*/new osg::ShapeDrawable(new osg::Box(osg::Vec3(),1.0)));// osg::Vec3( .5, .5, .5 ) ) );
     root->addChild( geode );
 
     btCollisionObject* btBoxObject = new btCollisionObject;
@@ -119,7 +119,8 @@ osg::Node* createScene( btCollisionWorld* cw, MoveManipulator* mm, osg::Argument
 
     // Create a box we can drag around with the mouse
     geode = new osg::Geode;
-    geode->addDrawable( osgwTools::makeBox( osg::Vec3( .5, .5, .5 ) ) );
+    geode->addDrawable( /*osgwTools::makeBox*/new osg::ShapeDrawable(new osg::Box(osg::Vec3(),1.0)));// osg::Vec3( .5, .5, .5 ) ) );
+
     osg::Matrix transMatrix = osg::Matrix::translate( 4., 0., 0. );
     osg::MatrixTransform* mt = new osg::MatrixTransform( transMatrix );
     mt->addChild( geode );

@@ -28,7 +28,7 @@
 #include <osgbDynamics/RigidBody.h>
 #include <osgbCollision/RefBulletObject.h>
 #include <osgbCollision/Utils.h>
-#include <osgbInteraction/SaveRestoreHandler.h>
+//#include <osgbInteraction/SaveRestoreHandler.h>
 #include <osgbInteraction/DragHandler.h>
 
 #include <btBulletDynamicsCommon.h>
@@ -36,7 +36,7 @@
 
 
 btRigidBody* createObject( osg::Group* parent, const osg::Matrix& m,
-                          osgbInteraction::SaveRestoreHandler* srh,
+                        //  osgbInteraction::SaveRestoreHandler* srh,
                           const osg::Vec3& com=osg::Vec3(0,0,0), bool setCom=false )
 {
     osg::Node* node = osgDB::readNodeFile( "com.osg" );
@@ -66,7 +66,7 @@ btRigidBody* createObject( osg::Group* parent, const osg::Matrix& m,
     mt->setUserData( new osgbCollision::RefRigidBody( rb ) );
     std::ostringstream id;
     id << std::hex << mt;
-    srh->add( id.str(), rb );
+   // srh->add( id.str(), rb );
 
     return( rb );
 }
@@ -95,8 +95,7 @@ int main( int argc, char** argv )
     btDynamicsWorld* bw = initPhysics();
     osg::Group* root = new osg::Group;
 
-    osg::ref_ptr< osgbInteraction::SaveRestoreHandler > srh = new
-        osgbInteraction::SaveRestoreHandler;
+   // osg::ref_ptr< osgbInteraction::SaveRestoreHandler > srh = new        osgbInteraction::SaveRestoreHandler;
 
     osg::Matrix m;
 
@@ -106,21 +105,23 @@ int main( int argc, char** argv )
     // NOT what you want, but is what you would get with a naive conversion of OSG data
     // into a collision shape.
     m = osg::Matrix::rotate( .4, 0., 0., 1. ) * osg::Matrix::translate( -24., 0., 10. );
-    bw->addRigidBody( createObject( root, m, srh.get(), osg::Vec3( 0., 0., 0. ), true ) );
+    bw->addRigidBody( createObject( root, m
+    /*, srh.get()*/
+   , osg::Vec3( 0., 0., 0. ), true ) );
 
     // Center object:
     // Specify the actual center of the mass of the model, in the model's own coordinate
     // space. In the case of this model, the COM is approx ( 2.15, 3., 2. ). This results
     // in much more realistic dynamics.
     m = osg::Matrix::rotate( .4, 0., 0., 1. ) * osg::Matrix::translate( -4., 0., 10. );
-    bw->addRigidBody( createObject( root, m, srh.get(), osg::Vec3( 2.15, 3., 2. ), true ) );
+    bw->addRigidBody( createObject( root, m    /*, srh.get()*/, osg::Vec3( 2.15, 3., 2. ), true ) );
 
     // Right object:
     // If you don't specify the center of mass, osgBullet tries to do you a favor, and
     // uses the bounding volume center as the COM. This works well in a lot of cases, but
     // for a model such as com.osg, you really should specify the COM expliticly.
     m = osg::Matrix::rotate( .4, 0., 0., 1. ) * osg::Matrix::translate( 16., 0., 10. );
-    bw->addRigidBody( createObject( root, m, srh.get() ) );
+    bw->addRigidBody( createObject( root, m    /*, srh.get()*/ ) );
 
     root->addChild( osgbDynamics::generateGroundPlane( osg::Vec4( 0.f, 0.f, 1.f, 0.f ), bw ) );
 
@@ -132,8 +133,8 @@ int main( int argc, char** argv )
     viewer.setCameraManipulator( tb );
 
     viewer.realize();
-    srh->capture();
-    viewer.addEventHandler( srh.get() );
+   /* srh->capture();
+    viewer.addEventHandler( srh.get() );*/
     viewer.addEventHandler( new osgbInteraction::DragHandler(
         bw, viewer.getCamera() ) );
 

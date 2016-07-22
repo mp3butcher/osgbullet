@@ -32,9 +32,10 @@
 #include <osgbCollision/Utils.h>
 #include <osgbInteraction/DragHandler.h>
 #include <osgbInteraction/LaunchHandler.h>
-#include <osgbInteraction/SaveRestoreHandler.h>
+//#include <osgbInteraction/SaveRestoreHandler.h>
 
-#include <osgwTools/Shapes.h>
+//#include <osgwTools/Shapes.h>
+#include <osg/ShapeDrawable>
 
 #include <btBulletDynamicsCommon.h>
 #include <BulletSoftBody/btSoftBodyHelpers.h>
@@ -92,11 +93,18 @@ osg::Node* makeFlag( btSoftRigidDynamicsWorld* bw )
 
     osg::ref_ptr< osg::Geode > geode( new osg::Geode );
 
-    const osg::Vec3 llCorner( -2., 0., 5. );
-    const osg::Vec3 uVec( 4., 0., 0. );
-    const osg::Vec3 vVec( 0., 0.1, 3. ); // Must be at a slight angle for wind to catch it.
-    osg::Geometry* geom = osgwTools::makePlane( llCorner,
-        uVec, vVec, osg::Vec2s( resX-1, resY-1 ) );
+      osg::Vec3 llCorner( -2., 0., 5. );
+      osg::Vec3 uVec( 4., 0., 0. );
+      osg::Vec3 vVec( 0., 0.1, 3. ); // Must be at a slight angle for wind to catch it.
+    osg::Geometry* geom = new osg::Geometry;
+    osg::Vec3Array * arr=new osg::Vec3Array();
+    arr->push_back(llCorner);
+    arr->push_back(llCorner+uVec);
+    arr->push_back(llCorner+vVec);
+    geom->setVertexArray(arr);
+    geom->addPrimitiveSet(new osg::DrawArrays(GL_TRIANGLES,0,3));
+
+    //osgwTools::makePlane( llCorner,        uVec, vVec, osg::Vec2s( resX-1, resY-1 ) );
     geode->addDrawable( geom );
 
     // Set up for dynamic data buffer objects
@@ -211,8 +219,7 @@ int main( int argc, char** argv )
     root->addChild( rootModel.get() );
 
 
-    osg::ref_ptr< osgbInteraction::SaveRestoreHandler > srh = new
-        osgbInteraction::SaveRestoreHandler;
+//    osg::ref_ptr< osgbInteraction::SaveRestoreHandler > srh = new        osgbInteraction::SaveRestoreHandler;
 
     // Add ground
     const osg::Vec4 plane( 0., 0., 1., 0. );
@@ -236,7 +243,7 @@ int main( int argc, char** argv )
     viewer.setSceneData( root );
 
     osgGA::TrackballManipulator* tb = new osgGA::TrackballManipulator;
-    tb->setHomePosition( osg::Vec3( 0., -16., 6. ), osg::Vec3( 0., 0., 5. ), osg::Vec3( 0., 0., 1. ) ); 
+    tb->setHomePosition( osg::Vec3( 0., -16., 6. ), osg::Vec3( 0., 0., 5. ), osg::Vec3( 0., 0., 1. ) );
     viewer.setCameraManipulator( tb );
     viewer.getCamera()->setClearColor( osg::Vec4( .5, .5, .5, 1. ) );
     viewer.realize();
@@ -248,16 +255,16 @@ int main( int argc, char** argv )
         // Use a custom launch model: Sphere with radius 0.2 (instead of default 1.0).
         osg::Geode* geode = new osg::Geode;
         const double radius( .2 );
-        geode->addDrawable( osgwTools::makeGeodesicSphere( radius ) );
+        geode->addDrawable( new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(),radius)));//osgwTools::makeGeodesicSphere( radius ) );
         lh->setLaunchModel( geode, new btSphereShape( radius ) );
         lh->setInitialVelocity( 40. );
 
         viewer.addEventHandler( lh );
     }
 
-    srh->setLaunchHandler( lh );
+   /* srh->setLaunchHandler( lh );
     srh->capture();
-    viewer.addEventHandler( srh.get() );
+    viewer.addEventHandler( srh.get() );*/
     viewer.addEventHandler( new osgbInteraction::DragHandler(
         bw, viewer.getCamera() ) );
 

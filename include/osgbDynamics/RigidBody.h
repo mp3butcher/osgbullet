@@ -63,7 +63,9 @@ public:
     virtual SoftBody * asSoftBody(){return 0;}
 
     void operator()( osg::Node* node, osg::NodeVisitor* nv );
+
 protected:
+    virtual void addPhysicalObjectToParentWorld()=0;
 ~PhysicalObject();
 World * _parentWorld;
 
@@ -85,6 +87,7 @@ public:
     void setRigidBody(btRigidBody*body){_body=body;}
    btRigidBody* getRigidBody()const {return _body;}
 protected:
+virtual void addPhysicalObjectToParentWorld();
 ~RigidBody();
 
 osgbDynamics::CreationRecord* cr;
@@ -107,6 +110,7 @@ public:
     void setSoftBody(btSoftBody*body){_body=body;}
    btSoftBody* getRigidBody()const {return _body;}
 protected:
+virtual void addPhysicalObjectToParentWorld();
 ~SoftBody();
 
 osgbDynamics::CreationRecord* cr;

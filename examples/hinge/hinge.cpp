@@ -35,14 +35,14 @@
 #include <osgbCollision/Utils.h>
 #include <osgbInteraction/DragHandler.h>
 #include <osgbInteraction/LaunchHandler.h>
-#include <osgbInteraction/SaveRestoreHandler.h>
+/*#include <osgbInteraction/SaveRestoreHandler.h>
 
 #include <osgwTools/InsertRemove.h>
 #include <osgwTools/FindNamedNode.h>
-#include <osgwTools/GeometryOperation.h>
-#include <osgwTools/GeometryModifier.h>
-#include <osgwTools/Shapes.h>
 
+#include <osgwTools/Shapes.h>*/
+#include <osgbCollision/GeometryOperation.h>
+#include <osgbCollision/GeometryModifier.h>
 #include <btBulletDynamicsCommon.h>
 
 #include <osg/io_utils>
@@ -57,6 +57,134 @@
 //   http://www.bulletphysics.com/mediawiki-1.5.8/index.php?title=Collision_Filtering
 //
 // Define filter groups
+
+class FindNamedNode : public osg::NodeVisitor
+{
+public:
+    /**
+    @param name Name of the Node to search for.
+    */
+    FindNamedNode( const std::string& name, const osg::NodeVisitor::TraversalMode travMode=osg::NodeVisitor::TRAVERSE_ACTIVE_CHILDREN );
+    ~FindNamedNode();
+
+    typedef std::pair< osg::Node*, osg::NodePath > NodeAndPath;
+    typedef std::vector< NodeAndPath > NodeAndPathList;
+    NodeAndPathList _napl;
+
+    void reset();
+
+    /**
+    Algorithm for matching the specified name. Possible future
+    work: support for case-insensitive matching.
+    */
+    typedef enum {
+        EXACT_MATCH,
+        CONTAINS
+    } MatchMethod;
+    /**
+    Specifies the match algorithm.
+    @param method The match algorithm. The default is EXACT_MATCH
+    */
+    void setMatchMethod( MatchMethod method );
+    /**
+    Gets the match algorithm.
+    */
+    MatchMethod getMatchMethod() const;
+
+    /**
+    Controls whether the named Node is included at the end of
+    the NodePaths in _napl.
+    @param includeTargetNode If false, don't include the named Node
+    in the returned NodePaths. The default is true (include the named Node
+    in the paths).
+    */
+    void setPathsIncludeTargetNode( bool includeTargetNode );
+    /**
+    Gets the current setting for including the named Node in the
+    returned NodePaths.
+    */
+    bool getPathsIncludeTargetNode() const;
+
+    /**
+    Overrides of base class apply() method.
+    */
+    void apply( osg::Node& node );
+
+protected:
+    std::string _name;
+
+    MatchMethod _method;
+    bool _includeTargetNode;
+};
+
+FindNamedNode::FindNamedNode( const std::string& name, const osg::NodeVisitor::TraversalMode travMode )
+  : osg::NodeVisitor( travMode ),
+    _name( name ),
+    _method( EXACT_MATCH ),
+    _includeTargetNode( true )
+{
+}
+
+FindNamedNode::~FindNamedNode()
+{
+}
+
+void
+FindNamedNode::reset()
+{
+    _napl.clear();
+}
+
+void
+FindNamedNode::setMatchMethod( MatchMethod method )
+{
+    _method = method;
+}
+FindNamedNode::MatchMethod
+FindNamedNode::getMatchMethod() const
+{
+    return( _method );
+}
+
+void
+FindNamedNode::setPathsIncludeTargetNode( bool includeTargetNode )
+{
+    _includeTargetNode = includeTargetNode;
+}
+bool
+FindNamedNode::getPathsIncludeTargetNode() const
+{
+    return( _includeTargetNode );
+}
+
+
+void
+FindNamedNode::apply( osg::Node& node )
+{
+    bool match = (
+        ( ( _method == EXACT_MATCH ) &&
+            ( node.getName() == _name ) ) ||
+        ( ( _method == CONTAINS ) &&
+            ( node.getName().find( _name ) != std::string::npos ) ) );
+
+    if( match )
+    {
+        // Copy the NodePath, so we can alter it if necessary.
+        osg::NodePath np = getNodePath();
+
+        if( !_includeTargetNode )
+            // Calling code has requested that the target node
+            // be removed from the node paths.
+            np.pop_back();
+
+        NodeAndPath nap( &node, np );
+        _napl.push_back( nap );
+    }
+
+    traverse( node );
+}
+
+
 enum CollisionTypes {
     COL_GATE = 0x1 << 0,
     COL_WALL = 0x1 << 1,
@@ -99,7 +227,7 @@ unsigned int defaultCollidesWith( COL_GATE | COL_WALL | COL_DEFAULT );
 // and END WALL FIX.
 
 /* \cond */
-class FindGeomOp : public osgwTools::GeometryOperation
+class FindGeomOp : public osgbCollision::GeometryOperation
 {
 public:
     FindGeomOp() {}
@@ -130,7 +258,7 @@ osg::Node* fixWalls( osg::Node* wallsNode )
     unsigned int count;
     {
         osg::ref_ptr< FindGeomOp > findGeom = new FindGeomOp;
-        osgwTools::GeometryModifier modifier( findGeom.get() );
+        osgbCollision::GeometryModifier modifier( findGeom.get() );
         wallsNode->accept( modifier );
 
         osg::Geometry* geom = findGeom->_target.get();
@@ -140,7 +268,7 @@ osg::Node* fixWalls( osg::Node* wallsNode )
     }
     {
         osg::ref_ptr< FindGeomOp > findGeom = new FindGeomOp;
-        osgwTools::GeometryModifier modifier( findGeom.get() );
+        osgbCollision::GeometryModifier modifier( findGeom.get() );
         otherWall->accept( modifier );
 
         osg::Geometry* geom = findGeom->_target.get();
@@ -169,12 +297,30 @@ void makeStaticObject( btDiscreteDynamicsWorld* bw, osg::Node* node, const osg::
     bw->addRigidBody( rb, COL_WALL, wallCollidesWith );
 }
 
-btRigidBody* gateBody;
-osg::Transform* makeGate( btDiscreteDynamicsWorld* bw, osgbInteraction::SaveRestoreHandler* srh, osg::Node* node, const osg::Matrix& m )
+void
+insertAbove( osg::Node* node, osg::Group* newParent )
 {
-    osgwTools::AbsoluteModelTransform* amt = new osgwTools::AbsoluteModelTransform;
+    // Don't let the node get deleted when we remove it from all its parents.
+    // Equivalent to explicit call to node->ref(), then node->unref() at end of function.
+    osg::ref_ptr< osg::Node > nodeHolder( node );
+
+    osg::Node::ParentList pl = node->getParents();
+    osg::Node::ParentList::iterator it;
+    for( it = pl.begin(); it != pl.end(); it++ )
+    {
+        osg::Group* oldParent( *it );
+        oldParent->addChild( newParent );
+        oldParent->removeChild( node );
+    }
+    newParent->addChild( node );
+}
+
+btRigidBody* gateBody;
+osg::Transform* makeGate( btDiscreteDynamicsWorld* bw/*, osgbInteraction::SaveRestoreHandler* srh*/, osg::Node* node, const osg::Matrix& m )
+{
+    osgbCollision::AbsoluteModelTransform* amt = new osgbCollision::AbsoluteModelTransform;
     amt->setDataVariance( osg::Object::DYNAMIC );
-    osgwTools::insertAbove( node, amt );
+    insertAbove( node, amt );
 
     osg::ref_ptr< osgbDynamics::CreationRecord > cr = new osgbDynamics::CreationRecord;
     cr->_sceneGraph = amt;
@@ -192,7 +338,7 @@ osg::Transform* makeGate( btDiscreteDynamicsWorld* bw, osgbInteraction::SaveRest
     // Save RB in global, as AMT UserData (for DragHandler), and in SaveRestoreHandler.
     gateBody = rb;
     amt->setUserData( new osgbCollision::RefRigidBody( rb ) );
-    srh->add( "gate", rb );
+  //  srh->add( "gate", rb );
 
     return( amt );
 }
@@ -217,7 +363,7 @@ btDiscreteDynamicsWorld* initPhysics()
 
 osg::Node* findNamedNode( osg::Node* model, const std::string& name, osg::Matrix& xform )
 {
-    osgwTools::FindNamedNode fnn( name );
+    FindNamedNode fnn( name );
     model->accept( fnn );
     if( fnn._napl.empty() )
     {
@@ -270,11 +416,10 @@ int main( int argc, char** argv )
     // END WALL FIX
 
 
-    osg::ref_ptr< osgbInteraction::SaveRestoreHandler > srh = new
-        osgbInteraction::SaveRestoreHandler;
+//    osg::ref_ptr< osgbInteraction::SaveRestoreHandler > srh = new        osgbInteraction::SaveRestoreHandler;
 
     // Make Bullet rigid bodies and collision shapes for the gate...
-    makeGate( bulletWorld, srh.get(), gateNode, gateXform );
+    makeGate( bulletWorld/*, srh.get() */,gateNode, gateXform );
     // ...and the two walls.
     makeStaticObject( bulletWorld, wallsNode, wallXform );
     makeStaticObject( bulletWorld, otherWall, otherWallXform );
@@ -315,7 +460,7 @@ int main( int argc, char** argv )
     viewer.setSceneData( root );
 
     osgGA::TrackballManipulator* tb = new osgGA::TrackballManipulator;
-    tb->setHomePosition( osg::Vec3( 0., -8., 2. ), osg::Vec3( 0., 0., 1. ), osg::Vec3( 0., 0., 1. ) ); 
+    tb->setHomePosition( osg::Vec3( 0., -8., 2. ), osg::Vec3( 0., 0., 1. ), osg::Vec3( 0., 0., 1. ) );
     viewer.setCameraManipulator( tb );
     viewer.getCamera()->setClearColor( osg::Vec4( .5, .5, .5, 1. ) );
     viewer.realize();
@@ -327,7 +472,7 @@ int main( int argc, char** argv )
         // Use a custom launch model: Sphere with radius 0.2 (instead of default 1.0).
         osg::Geode* geode = new osg::Geode;
         const double radius( .2 );
-        geode->addDrawable( osgwTools::makeGeodesicSphere( radius ) );
+        geode->addDrawable( new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(),radius)));//osgwTools::makeGeodesicSphere( radius ) );
         lh->setLaunchModel( geode, new btSphereShape( radius ) );
         lh->setInitialVelocity( 20. );
 
@@ -337,9 +482,9 @@ int main( int argc, char** argv )
         viewer.addEventHandler( lh );
     }
 
-    srh->setLaunchHandler( lh );
+   /* srh->setLaunchHandler( lh );
     srh->capture();
-    viewer.addEventHandler( srh.get() );
+    viewer.addEventHandler( srh.get() );*/
     viewer.addEventHandler( new osgbInteraction::DragHandler(
         bulletWorld, viewer.getCamera() ) );
 

@@ -19,9 +19,9 @@
  *************** <auto-copyright.pl END do not edit this line> ***************/
 
 #include "ReaderWriterSGB.h"
-
+/*
 #include <osgbDynamics/PhysicsState.h>
-#include <osgwTools/RefID.h>
+#include <osgwTools/RefID.h>*/
 
 #include <osgDB/ReaderWriter>
 #include <osgDB/FileUtils>
@@ -82,7 +82,7 @@ ReaderWriterSGB::readObject( const std::string& fileName, const Options* options
         return( osgDB::ReaderWriter::ReadResult::ERROR_IN_READING_FILE );
     osg::notify( osg::INFO ) << "OSGB: " << numEntries << " entries." << std::endl;
 
-    osg::ref_ptr< osgbDynamics::PhysicsState > ps = new osgbDynamics::PhysicsState;
+   /* osg::ref_ptr< osgbDynamics::PhysicsState > ps = new osgbDynamics::PhysicsState;
     unsigned int idx;
     for( idx = 0; idx < numEntries; idx++ )
     {
@@ -106,7 +106,8 @@ ReaderWriterSGB::readObject( const std::string& fileName, const Options* options
     }
 
 
-    return( ps.release() );
+    return( ps.release() );*/
+    return( osgDB::ReaderWriter::ReadResult::FILE_LOADED );
 }
 
 osgDB::ReaderWriter::WriteResult
@@ -116,13 +117,13 @@ ReaderWriterSGB::writeObject( const osg::Object& obj, const std::string& fileNam
     if( !fw.good() )
         return( osgDB::ReaderWriter::WriteResult::ERROR_IN_WRITING_FILE );
 
-    const osgbDynamics::PhysicsState* ps = dynamic_cast< const osgbDynamics::PhysicsState* > ( &obj );
+/*    const osgbDynamics::PhysicsState* ps = dynamic_cast< const osgbDynamics::PhysicsState* > ( &obj );
     if( ps == NULL )
         return( osgDB::ReaderWriter::WriteResult::ERROR_IN_WRITING_FILE );
 
 
     fw << "Physics data entries " << ps->getNumEntries() << std::endl;
-    ps->exportEntired( fw );
+    ps->exportEntired( fw );*/
 
     return( osgDB::ReaderWriter::WriteResult::FILE_SAVED );
 }

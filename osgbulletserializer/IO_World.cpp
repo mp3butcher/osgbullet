@@ -123,7 +123,7 @@ static bool readPhysicalProps( osgDB::InputStream& is, osgbDynamics::World& node
 {
     unsigned int size = 0; is >> size >> is.BEGIN_BRACKET;
 
-    btBulletWorldImporter BulletImporter((	node.getDynamicWorld()));
+    btBulletWorldImporter BulletImporter((	node.getDynamicsWorld()));
 
     char* memoryBuffer=new char[size];
     //is >>memoryBuffer;
@@ -148,7 +148,7 @@ static bool writePhysicalProps( osgDB::OutputStream& os, const osgbDynamics::Wor
 
     // start the serialization and serialize the trimeshShape
     serializer->startSerialization();
-    const btDynamicsWorld * w=node.getDynamicWorld();
+    const btDynamicsWorld * w=node.getDynamicsWorld();
     static_cast<btDiscreteDynamicsWorldHacker*>(const_cast<btDynamicsWorld *>(w))->serializeWorldInfo(serializer);
 
 

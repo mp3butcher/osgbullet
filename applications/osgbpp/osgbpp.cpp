@@ -22,7 +22,7 @@
 #include <osgDB/ReadFile>
 #include <osgDB/FileNameUtils>
 #include <osgDB/FileUtils>
-#include <osgwTools/AbsoluteModelTransform.h>
+#include <osgbCollision/AbsoluteModelTransform.h>
 #include <osg/ShapeDrawable>
 #include <osg/Geode>
 
@@ -37,7 +37,7 @@
 #include <osgbDynamics/RigidBody.h>
 #include <osgbCollision/Utils.h>
 
-#include <osgbInteraction/SaveRestoreHandler.h>
+//#include <osgbInteraction/SaveRestoreHandler.h>
 #include <osgbInteraction/DragHandler.h>
 #include <osgGA/TrackballManipulator>
 
@@ -333,7 +333,7 @@ int main( int argc, char* argv[] )
     //
     // Create the rigid body.
     // 1. Create an AnsoluteModelTransform to parent the model.
-    osg::ref_ptr< osgwTools::AbsoluteModelTransform > amtRoot( new osgwTools::AbsoluteModelTransform );
+    osg::ref_ptr< osgbCollision::AbsoluteModelTransform > amtRoot( new osgbCollision::AbsoluteModelTransform );
     amtRoot->addChild( model.get() );
 
     // 2. Specify rigid body parameters in a CreationRecord.
@@ -391,10 +391,10 @@ int main( int argc, char* argv[] )
     viewer.setCameraManipulator( tb );
 
     // Add an event handler to let us reset the scene.
-    osg::ref_ptr< osgbInteraction::SaveRestoreHandler > srh = new osgbInteraction::SaveRestoreHandler;
+   /* osg::ref_ptr< osgbInteraction::SaveRestoreHandler > srh = new osgbInteraction::SaveRestoreHandler;
     srh->add( dynamicsWorld );
     srh->capture();
-    viewer.addEventHandler( srh.get() );
+    viewer.addEventHandler( srh.get() );*/
 
     osgViewer::Viewer::Cameras cams;
     viewer.getCameras( cams );
