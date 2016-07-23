@@ -8,9 +8,9 @@ FILE(REMOVE_RECURSE
   "CMakeFiles/osgbDynamics.dir/RigidBodyAnimation.cpp.o"
   "CMakeFiles/osgbDynamics.dir/TripleBuffer.cpp.o"
   "CMakeFiles/osgbDynamics.dir/World.cpp.o"
-  "../../lib/libosgbDynamics.pdb"
-  "../../lib/libosgbDynamics.so"
-  "../../lib/libosgbDynamics.so.3.00.00"
+  "../../lib/libosgbDynamicsd.pdb"
+  "../../lib/libosgbDynamicsd.so"
+  "../../lib/libosgbDynamicsd.so.3.00.00"
 )
 
 # Per-language clean rules from dependency scanning.

@@ -442,42 +442,42 @@ osgbCollision_OBJECTS = \
 # External object files for target osgbCollision
 osgbCollision_EXTERNAL_OBJECTS =
 
-lib/libosgbCollision.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/BoundingCone.cpp.o
-lib/libosgbCollision.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/BoundingCylinder.cpp.o
-lib/libosgbCollision.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/Chart.cpp.o
-lib/libosgbCollision.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/CollectVerticesVisitor.cpp.o
-lib/libosgbCollision.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/CollisionShapes.cpp.o
-lib/libosgbCollision.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/ComputeCylinderVisitor.cpp.o
-lib/libosgbCollision.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/ComputeShapeVisitor.cpp.o
-lib/libosgbCollision.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/ComputeTriMeshVisitor.cpp.o
-lib/libosgbCollision.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/GLDebugDrawer.cpp.o
-lib/libosgbCollision.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/Utils.cpp.o
-lib/libosgbCollision.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/VertexAggOp.cpp.o
-lib/libosgbCollision.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/Version.cpp.o
-lib/libosgbCollision.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/AbsoluteModelTransform.cpp.o
-lib/libosgbCollision.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/GeometryOperation.cpp.o
-lib/libosgbCollision.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/ReducerOp.cpp.o
-lib/libosgbCollision.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/GeometryModifier.cpp.o
-lib/libosgbCollision.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/build.make
-lib/libosgbCollision.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libOpenThreadsd.so
-lib/libosgbCollision.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgd.so
-lib/libosgbCollision.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgDBd.so
-lib/libosgbCollision.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgUtild.so
-lib/libosgbCollision.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgGAd.so
-lib/libosgbCollision.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgTextd.so
-lib/libosgbCollision.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgViewerd.so
-lib/libosgbCollision.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgShadowd.so
-lib/libosgbCollision.so.3.00.00: /home/pascal/SRC/bullet3/src/BulletCollision/libBulletCollision.a
-lib/libosgbCollision.so.3.00.00: /home/pascal/SRC/bullet3/src/LinearMath/libLinearMath.a
-lib/libosgbCollision.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --red --bold "Linking CXX shared library ../../lib/libosgbCollision.so"
+lib/libosgbCollisiond.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/BoundingCone.cpp.o
+lib/libosgbCollisiond.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/BoundingCylinder.cpp.o
+lib/libosgbCollisiond.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/Chart.cpp.o
+lib/libosgbCollisiond.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/CollectVerticesVisitor.cpp.o
+lib/libosgbCollisiond.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/CollisionShapes.cpp.o
+lib/libosgbCollisiond.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/ComputeCylinderVisitor.cpp.o
+lib/libosgbCollisiond.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/ComputeShapeVisitor.cpp.o
+lib/libosgbCollisiond.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/ComputeTriMeshVisitor.cpp.o
+lib/libosgbCollisiond.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/GLDebugDrawer.cpp.o
+lib/libosgbCollisiond.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/Utils.cpp.o
+lib/libosgbCollisiond.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/VertexAggOp.cpp.o
+lib/libosgbCollisiond.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/Version.cpp.o
+lib/libosgbCollisiond.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/AbsoluteModelTransform.cpp.o
+lib/libosgbCollisiond.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/GeometryOperation.cpp.o
+lib/libosgbCollisiond.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/ReducerOp.cpp.o
+lib/libosgbCollisiond.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/GeometryModifier.cpp.o
+lib/libosgbCollisiond.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/build.make
+lib/libosgbCollisiond.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libOpenThreadsd.so
+lib/libosgbCollisiond.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgd.so
+lib/libosgbCollisiond.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgDBd.so
+lib/libosgbCollisiond.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgUtild.so
+lib/libosgbCollisiond.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgGAd.so
+lib/libosgbCollisiond.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgTextd.so
+lib/libosgbCollisiond.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgViewerd.so
+lib/libosgbCollisiond.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgShadowd.so
+lib/libosgbCollisiond.so.3.00.00: /home/pascal/SRC/bullet3/src/BulletCollision/libBulletCollision.a
+lib/libosgbCollisiond.so.3.00.00: /home/pascal/SRC/bullet3/src/LinearMath/libLinearMath.a
+lib/libosgbCollisiond.so.3.00.00: src/osgbCollision/CMakeFiles/osgbCollision.dir/link.txt
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --red --bold "Linking CXX shared library ../../lib/libosgbCollisiond.so"
 	cd /home/pascal/SRC/osgbullet/src/osgbCollision && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/osgbCollision.dir/link.txt --verbose=$(VERBOSE)
-	cd /home/pascal/SRC/osgbullet/src/osgbCollision && $(CMAKE_COMMAND) -E cmake_symlink_library ../../lib/libosgbCollision.so.3.00.00 ../../lib/libosgbCollision.so.3.00.00 ../../lib/libosgbCollision.so
+	cd /home/pascal/SRC/osgbullet/src/osgbCollision && $(CMAKE_COMMAND) -E cmake_symlink_library ../../lib/libosgbCollisiond.so.3.00.00 ../../lib/libosgbCollisiond.so.3.00.00 ../../lib/libosgbCollisiond.so
 
-lib/libosgbCollision.so: lib/libosgbCollision.so.3.00.00
+lib/libosgbCollisiond.so: lib/libosgbCollisiond.so.3.00.00
 
 # Rule to build all files generated by this target.
-src/osgbCollision/CMakeFiles/osgbCollision.dir/build: lib/libosgbCollision.so
+src/osgbCollision/CMakeFiles/osgbCollision.dir/build: lib/libosgbCollisiond.so
 .PHONY : src/osgbCollision/CMakeFiles/osgbCollision.dir/build
 
 src/osgbCollision/CMakeFiles/osgbCollision.dir/requires: src/osgbCollision/CMakeFiles/osgbCollision.dir/BoundingCone.cpp.o.requires

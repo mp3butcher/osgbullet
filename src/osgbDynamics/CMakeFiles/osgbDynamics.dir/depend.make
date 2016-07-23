@@ -1002,6 +1002,7 @@ src/osgbDynamics/CMakeFiles/osgbDynamics.dir/RigidBody.cpp.o: src/osgbDynamics/R
 src/osgbDynamics/CMakeFiles/osgbDynamics.dir/RigidBody.cpp.o: include/osgbCollision/AbsoluteModelTransform.h
 src/osgbDynamics/CMakeFiles/osgbDynamics.dir/RigidBody.cpp.o: include/osgbCollision/CollisionShapes.h
 src/osgbDynamics/CMakeFiles/osgbDynamics.dir/RigidBody.cpp.o: include/osgbCollision/Export.h
+src/osgbDynamics/CMakeFiles/osgbDynamics.dir/RigidBody.cpp.o: include/osgbCollision/Utils.h
 src/osgbDynamics/CMakeFiles/osgbDynamics.dir/RigidBody.cpp.o: include/osgbDynamics/CreationRecord.h
 src/osgbDynamics/CMakeFiles/osgbDynamics.dir/RigidBody.cpp.o: include/osgbDynamics/Export.h
 src/osgbDynamics/CMakeFiles/osgbDynamics.dir/RigidBody.cpp.o: include/osgbDynamics/MotionState.h

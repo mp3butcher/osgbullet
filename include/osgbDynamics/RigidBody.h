@@ -33,16 +33,29 @@ namespace osgbDynamics
 /** use to filter collisions  **/
 class World;
 typedef unsigned int CollisionMaskType;
-class OSGBDYNAMICS_EXPORT CollisionMask: public osg::Object{
+class OSGBDYNAMICS_EXPORT CollisionMask: public osg::Object
+{
 public:
     META_Object(osgbDynamics,CollisionMask)
-    CollisionMask(): _group(0),_mask(0){}
-    CollisionMask( const CollisionMask& copy, const osg::CopyOp& copyop=osg::CopyOp::SHALLOW_COPY ):osg::Object(copy,copyop),_group(copy._group),_mask(copy._mask){    }
+    CollisionMask(): _group(0),_mask(0) {}
+    CollisionMask( const CollisionMask& copy, const osg::CopyOp& copyop=osg::CopyOp::SHALLOW_COPY ):osg::Object(copy,copyop),_group(copy._group),_mask(copy._mask) {    }
 
-    inline CollisionMaskType getGroupID()const{return _group;}
-    inline void setGroupID( CollisionMaskType g){_group=g;}
-    inline CollisionMaskType getMask()const{return _mask;}
-    inline void setMask( CollisionMaskType g){_mask=g;}
+    inline CollisionMaskType getGroupID()const
+    {
+        return _group;
+    }
+    inline void setGroupID( CollisionMaskType g)
+    {
+        _group=g;
+    }
+    inline CollisionMaskType getMask()const
+    {
+        return _mask;
+    }
+    inline void setMask( CollisionMaskType g)
+    {
+        _mask=g;
+    }
 protected:
     CollisionMaskType _group,_mask;
 };
@@ -52,22 +65,48 @@ class SoftBody;
 class OSGBDYNAMICS_EXPORT PhysicalObject : public osg::NodeCallback
 {
 public:
-    PhysicalObject():_parentWorld(0){};
+    PhysicalObject():_parentWorld(0) {};
     PhysicalObject( const PhysicalObject& copy, const osg::CopyOp& copyop=osg::CopyOp::SHALLOW_COPY );
 
-    virtual bool isSameKindAs( const osg::Object* obj ) const { return dynamic_cast<const PhysicalObject*>(obj)!=NULL; }
-    virtual const char* libraryName () const { return "osgbDynamics"; }
-    virtual const char* className () const { return "PhysicalObject"; }
+    virtual bool isSameKindAs( const osg::Object* obj ) const
+    {
+        return dynamic_cast<const PhysicalObject*>(obj)!=NULL;
+    }
+    virtual const char* libraryName () const
+    {
+        return "osgbDynamics";
+    }
+    virtual const char* className () const
+    {
+        return "PhysicalObject";
+    }
 
-    virtual RigidBody * asRigidBody(){return 0;}
-    virtual SoftBody * asSoftBody(){return 0;}
+    virtual RigidBody * asRigidBody()
+    {
+        return 0;
+    }
+    virtual SoftBody * asSoftBody()
+    {
+        return 0;
+    }
 
     void operator()( osg::Node* node, osg::NodeVisitor* nv );
 
+    const World *getParentWorld()const
+    {
+        return _parentWorld;
+    }
+    void setParentWorld(World *c)
+    {
+        _parentWorld=c;
+    }
+
 protected:
+
+    virtual void updatematrix( osg::Node* node, osg::NodeVisitor* nv )=0;
     virtual void addPhysicalObjectToParentWorld()=0;
-~PhysicalObject();
-World * _parentWorld;
+    ~PhysicalObject();
+    World * _parentWorld;
 
 };
 
@@ -77,23 +116,41 @@ public:
     RigidBody();
     RigidBody( const RigidBody& copy, const osg::CopyOp& copyop=osg::CopyOp::SHALLOW_COPY );
 
-    virtual bool isSameKindAs( const osg::Object* obj ) const { return dynamic_cast<const RigidBody*>(obj)!=NULL; }
-    virtual const char* libraryName () const { return "osgbDynamics"; }
-    virtual const char* className () const { return "RigidBody"; }
+    virtual bool isSameKindAs( const osg::Object* obj ) const
+    {
+        return dynamic_cast<const RigidBody*>(obj)!=NULL;
+    }
+    virtual const char* libraryName () const
+    {
+        return "osgbDynamics";
+    }
+    virtual const char* className () const
+    {
+        return "RigidBody";
+    }
 
-    virtual RigidBody * asRigidBody(){return this;}
+    virtual RigidBody * asRigidBody()
+    {
+        return this;
+    }
 
-
-    void setRigidBody(btRigidBody*body){_body=body;}
-   btRigidBody* getRigidBody()const {return _body;}
+    void setRigidBody(btRigidBody*body)
+    {
+        _body=body;
+    }
+    btRigidBody* getRigidBody()const
+    {
+        return _body;
+    }
 protected:
-virtual void addPhysicalObjectToParentWorld();
-~RigidBody();
+    virtual void addPhysicalObjectToParentWorld();
+    virtual void updatematrix( osg::Node* node, osg::NodeVisitor* nv );
+    ~RigidBody();
 
-osgbDynamics::CreationRecord* cr;
+    osgbDynamics::CreationRecord* cr;
 
-btRigidBody* _body;
-btCollisionShape* _shape ;
+    btRigidBody* _body;
+    btCollisionShape* _shape ;
 
 
 };
@@ -103,20 +160,42 @@ public:
     SoftBody();
     SoftBody( const SoftBody& copy, const osg::CopyOp& copyop=osg::CopyOp::SHALLOW_COPY );
 
-    virtual bool isSameKindAs( const osg::Object* obj ) const { return dynamic_cast<const SoftBody*>(obj)!=NULL; }
-    virtual const char* libraryName () const { return "osgbDynamics"; }
-    virtual const char* className () const { return "SoftBody"; }
-    virtual SoftBody * asSoftBody(){return this;}
-    void setSoftBody(btSoftBody*body){_body=body;}
-   btSoftBody* getRigidBody()const {return _body;}
+    virtual bool isSameKindAs( const osg::Object* obj ) const
+    {
+        return dynamic_cast<const SoftBody*>(obj)!=NULL;
+    }
+    virtual const char* libraryName () const
+    {
+        return "osgbDynamics";
+    }
+    virtual const char* className () const
+    {
+        return "SoftBody";
+    }
+    virtual SoftBody * asSoftBody()
+    {
+        return this;
+    }
+    void setSoftBody(btSoftBody*body)
+    {
+        _body=body;
+    }
+    btSoftBody* getRigidBody()const
+    {
+        return _body;
+    }
+
+
 protected:
-virtual void addPhysicalObjectToParentWorld();
-~SoftBody();
 
-osgbDynamics::CreationRecord* cr;
-btSoftBody *_body;
+    virtual void updatematrix( osg::Node* node, osg::NodeVisitor* nv );
+    virtual void addPhysicalObjectToParentWorld();
+    ~SoftBody();
 
-btCollisionShape* _shape ;
+    osgbDynamics::CreationRecord* cr;
+    btSoftBody *_body;
+
+    btCollisionShape* _shape ;
 
 
 };
@@ -221,7 +300,7 @@ Use this function to create a rigid body if you have already created the collisi
 This is useful for sharing collision shapes.
 </p>
 */
- btRigidBody* OSGBDYNAMICS_EXPORT createRigidBody( osgbDynamics::CreationRecord* cr, btCollisionShape* shape );
+btRigidBody* OSGBDYNAMICS_EXPORT createRigidBody( osgbDynamics::CreationRecord* cr, btCollisionShape* shape );
 
 
 /**@}*/

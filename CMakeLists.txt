@@ -8,6 +8,7 @@ set( OSGBCOLLISION_MAJOR_VERSION 3 )
 set( OSGBCOLLISION_MINOR_VERSION 0 )
 set( OSGBCOLLISION_SUB_VERSION 0 )
 
+SET(CMAKE_DEBUG_POSTFIX "d")  
 set( CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}" )
 
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin )
@@ -187,7 +188,6 @@ ADD_SUBDIRECTORY( pmoc-osgbCollision )
 ADD_SUBDIRECTORY( pmoc-osgbDynamics )
 ADD_SUBDIRECTORY( pmoc-osgbInteraction )
 ADD_SUBDIRECTORY( osgbulletserializer )
-
 #
 # Doxygen
 find_package( Doxygen )

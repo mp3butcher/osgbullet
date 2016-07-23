@@ -22,6 +22,7 @@
 #include <osgbDynamics/CreationRecord.h>
 #include <osgbDynamics/MotionState.h>
 #include <osgbDynamics/World.h>
+#include <osgbCollision/Utils.h>
 #include <osgbCollision/CollisionShapes.h>
 #include <BulletSoftBody/btSoftRigidDynamicsWorld.h>
 #include <osg/Node>
@@ -68,6 +69,7 @@ void PhysicalObject::operator()( osg::Node* node, osg::NodeVisitor* nv )
         _parentWorld=fpv.foundWorld;
         addPhysicalObjectToParentWorld();
     }
+    updatematrix(node,nv);
     traverse( node, nv );
 }
 
@@ -75,6 +77,15 @@ PhysicalObject::~PhysicalObject() {}
 
 RigidBody::RigidBody() {}
 RigidBody::~RigidBody() {}
+void RigidBody::updatematrix( osg::Node* node, osg::NodeVisitor* nv )
+{
+osg::Matrix subMatrix=osgbCollision::asOsgMatrix(  _body->getWorldTransform());
+    osg::MatrixTransform* mt = dynamic_cast<osg::MatrixTransform*>(node);
+    if ( mt )
+    {
+        mt->setMatrix( subMatrix );
+    }
+}
 void RigidBody::addPhysicalObjectToParentWorld()
 {
     if(_parentWorld)
@@ -94,6 +105,15 @@ void RigidBody::addPhysicalObjectToParentWorld()
 }
 SoftBody::SoftBody() {}
 SoftBody::~SoftBody() {}
+void SoftBody::updatematrix( osg::Node* node, osg::NodeVisitor* nv )
+{
+osg::Matrix subMatrix=osgbCollision::asOsgMatrix(  _body->getWorldTransform());
+    osg::MatrixTransform* mt = dynamic_cast<osg::MatrixTransform*>(node);
+    if ( mt )
+    {
+        mt->setMatrix( subMatrix );
+    }
+}
 void SoftBody::addPhysicalObjectToParentWorld()
 {
     if(_parentWorld)

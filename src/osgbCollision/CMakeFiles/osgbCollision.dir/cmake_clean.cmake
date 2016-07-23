@@ -15,9 +15,9 @@ FILE(REMOVE_RECURSE
   "CMakeFiles/osgbCollision.dir/GeometryOperation.cpp.o"
   "CMakeFiles/osgbCollision.dir/ReducerOp.cpp.o"
   "CMakeFiles/osgbCollision.dir/GeometryModifier.cpp.o"
-  "../../lib/libosgbCollision.pdb"
-  "../../lib/libosgbCollision.so"
-  "../../lib/libosgbCollision.so.3.00.00"
+  "../../lib/libosgbCollisiond.pdb"
+  "../../lib/libosgbCollisiond.so"
+  "../../lib/libosgbCollisiond.so.3.00.00"
 )
 
 # Per-language clean rules from dependency scanning.

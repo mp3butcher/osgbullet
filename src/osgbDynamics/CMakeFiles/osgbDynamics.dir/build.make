@@ -274,48 +274,48 @@ osgbDynamics_OBJECTS = \
 # External object files for target osgbDynamics
 osgbDynamics_EXTERNAL_OBJECTS =
 
-lib/libosgbDynamics.so.3.00.00: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/Constraints.cpp.o
-lib/libosgbDynamics.so.3.00.00: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/CreationRecord.cpp.o
-lib/libosgbDynamics.so.3.00.00: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/GroundPlane.cpp.o
-lib/libosgbDynamics.so.3.00.00: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/MotionState.cpp.o
-lib/libosgbDynamics.so.3.00.00: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/PhysicsThread.cpp.o
-lib/libosgbDynamics.so.3.00.00: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/RigidBody.cpp.o
-lib/libosgbDynamics.so.3.00.00: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/RigidBodyAnimation.cpp.o
-lib/libosgbDynamics.so.3.00.00: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/TripleBuffer.cpp.o
-lib/libosgbDynamics.so.3.00.00: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/World.cpp.o
-lib/libosgbDynamics.so.3.00.00: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/build.make
-lib/libosgbDynamics.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libOpenThreadsd.so
-lib/libosgbDynamics.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgd.so
-lib/libosgbDynamics.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgDBd.so
-lib/libosgbDynamics.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgUtild.so
-lib/libosgbDynamics.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgGAd.so
-lib/libosgbDynamics.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgTextd.so
-lib/libosgbDynamics.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgViewerd.so
-lib/libosgbDynamics.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgShadowd.so
-lib/libosgbDynamics.so.3.00.00: /home/pascal/SRC/bullet3/src/BulletDynamics/libBulletDynamics.a
-lib/libosgbDynamics.so.3.00.00: /home/pascal/SRC/bullet3/src/BulletCollision/libBulletCollision.a
-lib/libosgbDynamics.so.3.00.00: /home/pascal/SRC/bullet3/src/LinearMath/libLinearMath.a
-lib/libosgbDynamics.so.3.00.00: /home/pascal/SRC/bullet3/src/BulletSoftBody/libBulletSoftBody.a
-lib/libosgbDynamics.so.3.00.00: lib/libosgbCollision.so.3.00.00
-lib/libosgbDynamics.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libOpenThreadsd.so
-lib/libosgbDynamics.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgd.so
-lib/libosgbDynamics.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgDBd.so
-lib/libosgbDynamics.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgUtild.so
-lib/libosgbDynamics.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgGAd.so
-lib/libosgbDynamics.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgTextd.so
-lib/libosgbDynamics.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgViewerd.so
-lib/libosgbDynamics.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgShadowd.so
-lib/libosgbDynamics.so.3.00.00: /home/pascal/SRC/bullet3/src/BulletCollision/libBulletCollision.a
-lib/libosgbDynamics.so.3.00.00: /home/pascal/SRC/bullet3/src/LinearMath/libLinearMath.a
-lib/libosgbDynamics.so.3.00.00: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --red --bold "Linking CXX shared library ../../lib/libosgbDynamics.so"
+lib/libosgbDynamicsd.so.3.00.00: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/Constraints.cpp.o
+lib/libosgbDynamicsd.so.3.00.00: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/CreationRecord.cpp.o
+lib/libosgbDynamicsd.so.3.00.00: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/GroundPlane.cpp.o
+lib/libosgbDynamicsd.so.3.00.00: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/MotionState.cpp.o
+lib/libosgbDynamicsd.so.3.00.00: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/PhysicsThread.cpp.o
+lib/libosgbDynamicsd.so.3.00.00: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/RigidBody.cpp.o
+lib/libosgbDynamicsd.so.3.00.00: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/RigidBodyAnimation.cpp.o
+lib/libosgbDynamicsd.so.3.00.00: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/TripleBuffer.cpp.o
+lib/libosgbDynamicsd.so.3.00.00: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/World.cpp.o
+lib/libosgbDynamicsd.so.3.00.00: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/build.make
+lib/libosgbDynamicsd.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libOpenThreadsd.so
+lib/libosgbDynamicsd.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgd.so
+lib/libosgbDynamicsd.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgDBd.so
+lib/libosgbDynamicsd.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgUtild.so
+lib/libosgbDynamicsd.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgGAd.so
+lib/libosgbDynamicsd.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgTextd.so
+lib/libosgbDynamicsd.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgViewerd.so
+lib/libosgbDynamicsd.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgShadowd.so
+lib/libosgbDynamicsd.so.3.00.00: /home/pascal/SRC/bullet3/src/BulletDynamics/libBulletDynamics.a
+lib/libosgbDynamicsd.so.3.00.00: /home/pascal/SRC/bullet3/src/BulletCollision/libBulletCollision.a
+lib/libosgbDynamicsd.so.3.00.00: /home/pascal/SRC/bullet3/src/LinearMath/libLinearMath.a
+lib/libosgbDynamicsd.so.3.00.00: /home/pascal/SRC/bullet3/src/BulletSoftBody/libBulletSoftBody.a
+lib/libosgbDynamicsd.so.3.00.00: lib/libosgbCollisiond.so.3.00.00
+lib/libosgbDynamicsd.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libOpenThreadsd.so
+lib/libosgbDynamicsd.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgd.so
+lib/libosgbDynamicsd.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgDBd.so
+lib/libosgbDynamicsd.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgUtild.so
+lib/libosgbDynamicsd.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgGAd.so
+lib/libosgbDynamicsd.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgTextd.so
+lib/libosgbDynamicsd.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgViewerd.so
+lib/libosgbDynamicsd.so.3.00.00: /home/pascal/SRC/OSGmyGIT/lib/libosgShadowd.so
+lib/libosgbDynamicsd.so.3.00.00: /home/pascal/SRC/bullet3/src/BulletCollision/libBulletCollision.a
+lib/libosgbDynamicsd.so.3.00.00: /home/pascal/SRC/bullet3/src/LinearMath/libLinearMath.a
+lib/libosgbDynamicsd.so.3.00.00: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/link.txt
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --red --bold "Linking CXX shared library ../../lib/libosgbDynamicsd.so"
 	cd /home/pascal/SRC/osgbullet/src/osgbDynamics && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/osgbDynamics.dir/link.txt --verbose=$(VERBOSE)
-	cd /home/pascal/SRC/osgbullet/src/osgbDynamics && $(CMAKE_COMMAND) -E cmake_symlink_library ../../lib/libosgbDynamics.so.3.00.00 ../../lib/libosgbDynamics.so.3.00.00 ../../lib/libosgbDynamics.so
+	cd /home/pascal/SRC/osgbullet/src/osgbDynamics && $(CMAKE_COMMAND) -E cmake_symlink_library ../../lib/libosgbDynamicsd.so.3.00.00 ../../lib/libosgbDynamicsd.so.3.00.00 ../../lib/libosgbDynamicsd.so
 
-lib/libosgbDynamics.so: lib/libosgbDynamics.so.3.00.00
+lib/libosgbDynamicsd.so: lib/libosgbDynamicsd.so.3.00.00
 
 # Rule to build all files generated by this target.
-src/osgbDynamics/CMakeFiles/osgbDynamics.dir/build: lib/libosgbDynamics.so
+src/osgbDynamics/CMakeFiles/osgbDynamics.dir/build: lib/libosgbDynamicsd.so
 .PHONY : src/osgbDynamics/CMakeFiles/osgbDynamics.dir/build
 
 src/osgbDynamics/CMakeFiles/osgbDynamics.dir/requires: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/Constraints.cpp.o.requires

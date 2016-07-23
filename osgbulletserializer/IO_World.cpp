@@ -2,63 +2,12 @@
  * osgbDynamics serializer
  Julien Valentin
  */
-#include "btWorldImporter.h"
-
-#include "BulletSoftBody/btSoftBodyData.h"
-#include "BulletSoftBody/btSoftRigidDynamicsWorld.h"
-
-class btBulletFile;
-
-
-
-
-namespace bParse
-{
-	class btBulletFile;
-
-};
-
-
-
-///The btBulletWorldImporter is a starting point to import .bullet files.
-///note that not all data is converted yet. You are expected to override or modify this class.
-
-class btBulletWorldImporter : public btWorldImporter
-{
-protected:
-	btSoftRigidDynamicsWorld* m_softRigidWorld;
-
-	btHashMap<btHashPtr,btSoftBody::Material*>	m_materialMap;
-
-	btHashMap<btHashPtr,btSoftBody*>	m_clusterBodyMap;
-	btHashMap<btHashPtr,btSoftBody*>	m_softBodyMap;
-
-public:
-
-	btBulletWorldImporter(btDynamicsWorld* world=0);
-
-	virtual ~btBulletWorldImporter();
-
-	///if you pass a valid preSwapFilenameOut, it will save a new file with a different endianness
-	///this pre-swapped file can be loaded without swapping on a target platform of different endianness
-	bool	loadFile(const char* fileName, const char* preSwapFilenameOut=0);
-
-	///the memoryBuffer might be modified (for example if endian swaps are necessary)
-	bool	loadFileFromMemory(char *memoryBuffer, int len);
-
-	bool	loadFileFromMemory(bParse::btBulletFile* file);
-
-	//call make sure bulletFile2 has been parsed, either using btBulletFile::parse or btBulletWorldImporter::loadFileFromMemory
-	virtual	bool	convertAllObjects(bParse::btBulletFile* file);
-
-
-
-
-};
 #undef OBJECT_CAST
 #define OBJECT_CAST dynamic_cast
 
-#include <osgbDynamics/World.h>
+
+
+#include "btWorldImporter.h"
 
 
 #include <osgDB/Registry>
@@ -73,8 +22,9 @@ public:
 #include <osgDB/InputStream>
 #include <osgDB/OutputStream>
 
+#include <sstream>
 
-
+osgbDynamics::World*  sharedworld::currentworld=0;
 
 using namespace osgbDynamics;
 using namespace osg;
@@ -121,14 +71,20 @@ static bool checkPhysicalProps( const osgbDynamics::World& node )
 
 static bool readPhysicalProps( osgDB::InputStream& is, osgbDynamics::World& node )
 {
-    unsigned int size = 0; is >> size >> is.BEGIN_BRACKET;
+
+sharedworld::currentworld= (&node);
+   unsigned int sizel = 0; is >> sizel >> is.BEGIN_BRACKET;
 
     btBulletWorldImporter BulletImporter((	node.getDynamicsWorld()));
 
-    char* memoryBuffer=new char[size];
+    char* memoryBuffer=new char[sizel];
     //is >>memoryBuffer;
-    is.readCharArray(memoryBuffer,size);
-	bool result = BulletImporter.loadFileFromMemory(memoryBuffer,size);
+    //is.readCharArray(memoryBuffer,sizel);
+      char * ptr=memoryBuffer;
+
+    while(ptr<memoryBuffer+sizel)
+     is>>*ptr++;
+	bool result = BulletImporter.loadFileFromMemory(memoryBuffer,sizel);
 
 
     is >> is.END_BRACKET;
@@ -145,7 +101,7 @@ public:
 
 static bool writePhysicalProps( osgDB::OutputStream& os, const osgbDynamics::World& node ){
     btDefaultSerializer* serializer = new btDefaultSerializer();
-
+sharedworld::currentworld=const_cast<  osgbDynamics::World *>(&node);
     // start the serialization and serialize the trimeshShape
     serializer->startSerialization();
     const btDynamicsWorld * w=node.getDynamicsWorld();
@@ -164,18 +120,37 @@ static bool writePhysicalProps( osgDB::OutputStream& os, const osgbDynamics::Wor
     //psb->getCollisionShape()->serializeSingleShape(serializer);
 
     serializer->finishSerialization();
+    os <<serializer->getCurrentBufferSize() << os.BEGIN_BRACKET << std::endl;
 
-    os << serializer->getCurrentBufferSize() << os.BEGIN_BRACKET << std::endl;
+  /*   char * portablestring=(char*)malloc(1+2*serializer->getCurrentBufferSize());
+    char *outptr=portablestring;
+    const unsigned char * ptr=serializer->getBufferPointer();
+
+    while(ptr!=serializer->getBufferPointer()+ serializer->getCurrentBufferSize()){
+   std::stringstream h; h<<std::hex<<short(*ptr++);
+    *outptr++=h.str()[0];
+    if(h.str().size()>1)*outptr++=h.str()[1];
+    else *outptr++='0';
+std::cout<<h.str()<<std::endl;;
+    }
+     *outptr='\0';
+//CHAR_BIT
 
      //   os << serializer->getBufferPointer();
-    os.writeCharArray((char*)serializer->getBufferPointer(), serializer->getCurrentBufferSize() );
+    outptr=portablestring;
+    while(outptr!=portablestring+ 2*serializer->getCurrentBufferSize())
+    os<<*outptr++;//.writeCharArray(portablestring,1+ serializer->getCurrentBufferSize()*2 );
+*/
+    const unsigned char * ptr=serializer->getBufferPointer();
 
+    while(ptr<serializer->getBufferPointer()+ serializer->getCurrentBufferSize())
+     os<<(char)*ptr++;
     os << os.END_BRACKET << std::endl;
 // create a file and write the world to file
 //FILE* file = fopen("testInit_Volume.bullet","wb");
 //fwrite(serializer->getBufferPointer(),serializer->getCurrentBufferSize(),1, file);
 //fclose(file);
-
+return true;
 }
 
 REGISTER_OBJECT_WRAPPER(osgbDynamicsWorld,
@@ -190,6 +165,7 @@ REGISTER_OBJECT_WRAPPER(osgbDynamicsWorld,
    ADD_ENUM_VALUE(RIGID_ONLY);
    ADD_ENUM_VALUE(RIGID_AND_SOFT);
    END_ENUM_SERIALIZER();
+    ADD_USER_SERIALIZER(PhysicalProps);
     ADD_USER_SERIALIZER(PhysicalObjects);
 
 

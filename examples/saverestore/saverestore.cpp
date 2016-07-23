@@ -44,6 +44,8 @@
 #include <osgbDynamics/RigidBodyAnimation.h>
 #include <osgbCollision/GLDebugDrawer.h>
 #include <osgbDynamics/World.h>
+#include <osgDB/WriteFile>
+#include <osgDB/ReadFile>
 
 osg::AnimationPath * createAnimationPath( const osg::Vec3 & center,
                                           float radius,
@@ -204,7 +206,8 @@ osg::MatrixTransform * createModel( btDynamicsWorld * dynamicsWorld )
     /*  osgBullet code */
     osgbDynamics::MotionState * motion = new osgbDynamics::MotionState;
     motion->setTransform( node.get() );
-    btCollisionShape * collision = osgbCollision::btConvexTriMeshCollisionShapeFromOSG( node.get() );
+  //ConvexHullCollisionShape outperform  btCollisionShape * collision = osgbCollision::btConvexTriMeshCollisionShapeFromOSG( node.get() );
+       btCollisionShape * collision =  osgbCollision::btConvexHullCollisionShapeFromOSG( node.get() );
     // Create an OSG representation of the Bullet shape and attach it.
     // This is mainly for debugging.
     osg::Node* debugNode = osgbCollision::osgNodeFromBtCollisionShape( collision );
@@ -258,7 +261,6 @@ int main( int argc,
     viewer.setCameraManipulator( tb );
 
     osg::ref_ptr< osg::Group > root = new osg::Group;
-    viewer.setSceneData( root.get() );
 
     osgDB::getDataFilePathList().push_back( "C:\\OpenSceneGraph\\Data" );
 
@@ -360,6 +362,12 @@ int main( int argc,
         dynamicsWorld->setDebugDrawer( dbgDraw );
         root->addChild( dbgDraw->getSceneGraph() );
 
+    osgDB::writeNodeFile(*root.get(),"fok.osgt");
+    root=(osg::Group*)osgDB::readNodeFile("fok.osgt");
+
+
+
+    viewer.setSceneData( root.get() );
     viewer.realize();
 
 

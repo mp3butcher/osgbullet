@@ -34,8 +34,8 @@ ENDIF(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
 
 IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "libosgbbullet")
   FOREACH(file
-      "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/x86_64-linux-gnu/libosgbCollision.so.3.00.00"
-      "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/x86_64-linux-gnu/libosgbCollision.so"
+      "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/x86_64-linux-gnu/libosgbCollisiond.so.3.00.00"
+      "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/x86_64-linux-gnu/libosgbCollisiond.so"
       )
     IF(EXISTS "${file}" AND
        NOT IS_SYMLINK "${file}")
@@ -45,12 +45,12 @@ IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "libosgb
     ENDIF()
   ENDFOREACH()
   FILE(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/x86_64-linux-gnu" TYPE SHARED_LIBRARY FILES
-    "/home/pascal/SRC/osgbullet/lib/libosgbCollision.so.3.00.00"
-    "/home/pascal/SRC/osgbullet/lib/libosgbCollision.so"
+    "/home/pascal/SRC/osgbullet/lib/libosgbCollisiond.so.3.00.00"
+    "/home/pascal/SRC/osgbullet/lib/libosgbCollisiond.so"
     )
   FOREACH(file
-      "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/x86_64-linux-gnu/libosgbCollision.so.3.00.00"
-      "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/x86_64-linux-gnu/libosgbCollision.so"
+      "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/x86_64-linux-gnu/libosgbCollisiond.so.3.00.00"
+      "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/x86_64-linux-gnu/libosgbCollisiond.so"
       )
     IF(EXISTS "${file}" AND
        NOT IS_SYMLINK "${file}")

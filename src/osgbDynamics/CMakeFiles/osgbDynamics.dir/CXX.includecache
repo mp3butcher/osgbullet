@@ -1893,6 +1893,8 @@ osgbDynamics/MotionState.h
 -
 osgbDynamics/World.h
 -
+osgbCollision/Utils.h
+-
 osgbCollision/CollisionShapes.h
 -
 BulletSoftBody/btSoftRigidDynamicsWorld.h
@@ -1929,6 +1931,20 @@ btBulletCollisionCommon.h
 -
 
 include/osgbCollision/Export.h
+
+include/osgbCollision/Utils.h
+osgbCollision/Export.h
+-
+osg/Matrix
+-
+osg/Vec3
+-
+osg/Vec4
+-
+osg/Array
+-
+LinearMath/btTransform.h
+-
 
 include/osgbDynamics/CreationRecord.h
 osgbDynamics/Export.h

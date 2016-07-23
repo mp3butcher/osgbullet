@@ -30,8 +30,8 @@
 using namespace osgbDynamics;
 
 World::World()
-:   _btworld(NULL),_worldtype(RIGID_ONLY),_deltaTime( USE_REFERENCE_TIME)
-{
+:   _btworld(NULL),_deltaTime( USE_REFERENCE_TIME)
+{setWorldType(RIGID_ONLY);
 }
 
 World::~World()
