@@ -28,6 +28,7 @@
 #include <osgGA/GUIEventHandler>
 #include <osg/MatrixTransform>
 #include <osg/Geode>
+#include <osgbCollision/GLDebugDrawer.h>
 //#include <osgwTools/Shapes.h>
 //#include <osgwTools/Version.h
 #include <osg/ShapeDrawable>
@@ -189,13 +190,21 @@ int main( int argc,
 
     osg::ArgumentParser arguments( &argc, argv );
     MoveManipulator* mm = new MoveManipulator;
-    osg::ref_ptr< osg::Node > root = createScene( collisionWorld, mm, arguments );
+    osg::ref_ptr< osg::Group > root =(osg::Group*) createScene( collisionWorld, mm, arguments );
 
     osgViewer::Viewer viewer;
     viewer.setUpViewInWindow( 10, 30, 800, 600 );
     viewer.setCameraManipulator( new osgGA::TrackballManipulator() );
     viewer.addEventHandler( mm );
+
+           osgbCollision::GLDebugDrawer* dbgDraw = new osgbCollision::GLDebugDrawer();
+        dbgDraw->setDebugMode( ~btIDebugDraw::DBG_DrawText );
+        collisionWorld->setDebugDrawer( dbgDraw );
+        root->addChild( dbgDraw->getSceneGraph() );
+
     viewer.setSceneData( root.get() );
+
+
 
     bool lastColState = false;
     while( !viewer.done() )
@@ -203,7 +212,10 @@ int main( int argc,
         collisionWorld->performDiscreteCollisionDetection();
 
         detectCollision( lastColState, collisionWorld );
+          dbgDraw->BeginDraw();
 
+        collisionWorld->debugDrawWorld();
+            dbgDraw->EndDraw();
         viewer.frame();
     }
 

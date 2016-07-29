@@ -7,7 +7,7 @@
 
 
 
-#include "btWorldImporter.h"
+#include "osgbtWorldImporter.h"
 
 
 #include <osgDB/Registry>
@@ -32,33 +32,65 @@ using namespace osgDB;
 
 namespace  osgbDynamicsWorldwrapper
 {
-/*
-PHYPROPERTY(osgPhysics::World,Gravity,osg::Vec3)*/
-static bool checkPhysicalObjects( const osgbDynamics::World& node )
+
+static bool checkChildren( const  osgbDynamics::World& node )
 {
-    return node.getNumPhysicalObjects()>0;
+    return node.getNumChildren()>0;
 }
 
-static bool readPhysicalObjects( osgDB::InputStream& is, osgbDynamics::World& node )
+static bool readChildren( osgDB::InputStream& is,  osgbDynamics::World& node )
 {
     unsigned int size = 0; is >> size >> is.BEGIN_BRACKET;
     for ( unsigned int i=0; i<size; ++i )
     {
         osg::ref_ptr<osg::Object> obj = is.readObject();
-        osgbDynamics::PhysicalObject* child = dynamic_cast<osgbDynamics::PhysicalObject*>( obj.get() );
-        if ( child ) node.addPhysicalObject( child );
+        osg::Node* child = dynamic_cast<osg::Node*>( obj.get() );
+        if ( child ) node.addChild( child );
     }
     is >> is.END_BRACKET;
     return true;
 }
 
-static bool writePhysicalObjects( osgDB::OutputStream& os, const osgbDynamics::World& node )
+static bool writeChildren( osgDB::OutputStream& os, const  osgbDynamics::World& node )
 {
-    unsigned int size = node.getNumPhysicalObjects();
+    unsigned int size = node.getNumChildren();
     os << size << os.BEGIN_BRACKET << std::endl;
     for ( unsigned int i=0; i<size; ++i )
     {
-        os << node.getPhysicalObject(i);
+        os << node.getChild(i);
+    }
+    os << os.END_BRACKET << std::endl;
+    return true;
+}
+
+/*
+PHYPROPERTY(osgPhysics::World,Gravity,osg::Vec3)*/
+
+static bool checkJoints( const osgbDynamics::World& node )
+{
+    return node.getNumJoints()>0;
+}
+
+static bool readJoints( osgDB::InputStream& is, osgbDynamics::World& node )
+{
+    unsigned int size = 0; is >> size >> is.BEGIN_BRACKET;
+    for ( unsigned int i=0; i<size; ++i )
+    {
+        osg::ref_ptr<osg::Object> obj = is.readObject();
+        osgbDynamics::Joint* child = dynamic_cast<osgbDynamics::Joint*>( obj.get() );
+        if ( child ) node.addJoint( child );
+    }
+    is >> is.END_BRACKET;
+    return true;
+}
+
+static bool writeJoints( osgDB::OutputStream& os, const osgbDynamics::World& node )
+{
+    unsigned int size = node.getNumJoints();
+    os << size << os.BEGIN_BRACKET << std::endl;
+    for ( unsigned int i=0; i<size; ++i )
+    {
+        os << node.getJoint(i);
     }
     os << os.END_BRACKET << std::endl;
     return true;
@@ -75,7 +107,7 @@ static bool readPhysicalProps( osgDB::InputStream& is, osgbDynamics::World& node
 sharedworld::currentworld= (&node);
    unsigned int sizel = 0; is >> sizel >> is.BEGIN_BRACKET;
 
-    btBulletWorldImporter BulletImporter((	node.getDynamicsWorld()));
+    osgbtBulletWorldImporter BulletImporter((	node.getDynamicsWorld()));
 
     char* memoryBuffer=new char[sizel];
     //is >>memoryBuffer;
@@ -99,13 +131,24 @@ public:
 
 };
 
+class btSoftRigidDynamicsWorlddHacker :public btSoftRigidDynamicsWorld{
+public:
+
+	void	serializeWorldInfo(btSerializer* serializer){
+	serializeDynamicsWorldInfo( serializer);}
+
+};
+
 static bool writePhysicalProps( osgDB::OutputStream& os, const osgbDynamics::World& node ){
     btDefaultSerializer* serializer = new btDefaultSerializer();
 sharedworld::currentworld=const_cast<  osgbDynamics::World *>(&node);
     // start the serialization and serialize the trimeshShape
     serializer->startSerialization();
-    const btDynamicsWorld * w=node.getDynamicsWorld();
-    static_cast<btDiscreteDynamicsWorldHacker*>(const_cast<btDynamicsWorld *>(w))->serializeWorldInfo(serializer);
+    const btDiscreteDynamicsWorld * w=node.getDynamicsWorld();
+    if(node.getWorldType()==osgbDynamics::World::RIGID_AND_SOFT)
+    static_cast<btSoftRigidDynamicsWorlddHacker*>(const_cast<btDiscreteDynamicsWorld *>(w))->serializeWorldInfo(serializer);
+else
+    static_cast<btDiscreteDynamicsWorldHacker*>(const_cast<btDiscreteDynamicsWorld *>(w))->serializeWorldInfo(serializer);
 
 
     /*btCollisionObject *colObj=psb;
@@ -156,7 +199,7 @@ return true;
 REGISTER_OBJECT_WRAPPER(osgbDynamicsWorld,
                         new osgbDynamics::World,
                         osgbDynamics::World,
-                        "osg::Object osg::Callback osg::NodeCallback osgbDynamics::World")
+                        "osg::Object osg::Node osgbDynamics::World")
 {
 
    // ADD_STRING_SERIALIZER(PhysicalEngineString,"");
@@ -166,7 +209,8 @@ REGISTER_OBJECT_WRAPPER(osgbDynamicsWorld,
    ADD_ENUM_VALUE(RIGID_AND_SOFT);
    END_ENUM_SERIALIZER();
     ADD_USER_SERIALIZER(PhysicalProps);
-    ADD_USER_SERIALIZER(PhysicalObjects);
+    ADD_USER_SERIALIZER(Children);
+    ADD_USER_SERIALIZER(Joints);
 
 
 

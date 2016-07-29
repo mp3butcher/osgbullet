@@ -28,6 +28,8 @@
 #include <osgUtil/SmoothingVisitor>
 
 #include <osgbDynamics/GroundPlane.h>
+#include <osgbDynamics/SoftBody.h>
+#include <osgbDynamics/World.h>
 #include <osgbCollision/GLDebugDrawer.h>
 #include <osgbCollision/Utils.h>
 #include <osgbInteraction/DragHandler.h>
@@ -47,15 +49,16 @@
 #include <string>
 
 
+#include <osgDB/WriteFile>
+#include <osgDB/ReadFile>
 btSoftBodyWorldInfo	worldInfo;
 
 
 /** \cond */
 struct MeshUpdater : public osg::Drawable::UpdateCallback
 {
-    MeshUpdater( const btSoftBody* softBody, const unsigned int size )
-      : _softBody( softBody ),
-        _size( size )
+    MeshUpdater( const btSoftBody* softBody )
+      : _softBody( softBody )
     {}
     virtual ~MeshUpdater()
     {}
@@ -66,12 +69,14 @@ struct MeshUpdater : public osg::Drawable::UpdateCallback
         osg::Vec3Array* verts( dynamic_cast< osg::Vec3Array* >( geom->getVertexArray() ) );
 
         // Update the vertex array from the soft body node array.
+        osg::Matrix m=osgbCollision::asOsgMatrix(_softBody->getWorldTransform());
         const btSoftBody::tNodeArray& nodes = _softBody->m_nodes;
+        //if(verts->size()<nodes.size())verts->resize(nodes.size());
         osg::Vec3Array::iterator it( verts->begin() );
         unsigned int idx;
-        for( idx=0; idx<_size; idx++)
+        for( idx=0; idx<nodes.size(); idx++)
         {
-            *it++ = osgbCollision::asOsgVec3( nodes[ idx ].m_x );
+            *it++ =m* osgbCollision::asOsgVec3( nodes[ idx ].m_x );
         }
         verts->dirty();
         draw->dirtyBound();
@@ -83,11 +88,11 @@ struct MeshUpdater : public osg::Drawable::UpdateCallback
     }
 
     const btSoftBody* _softBody;
-    const unsigned int _size;
+
 };
 /** \endcond */
 
-osg::Node* makeFlag( btSoftRigidDynamicsWorld* bw )
+    osg::Node* makeFlag( btSoftRigidDynamicsWorld* bw )
 {
     const short resX( 12 ), resY( 9 );
 
@@ -96,15 +101,25 @@ osg::Node* makeFlag( btSoftRigidDynamicsWorld* bw )
       osg::Vec3 llCorner( -2., 0., 5. );
       osg::Vec3 uVec( 4., 0., 0. );
       osg::Vec3 vVec( 0., 0.1, 3. ); // Must be at a slight angle for wind to catch it.
-    osg::Geometry* geom = new osg::Geometry;
-    osg::Vec3Array * arr=new osg::Vec3Array();
-    arr->push_back(llCorner);
-    arr->push_back(llCorner+uVec);
-    arr->push_back(llCorner+vVec);
-    geom->setVertexArray(arr);
-    geom->addPrimitiveSet(new osg::DrawArrays(GL_TRIANGLES,0,3));
-
-    //osgwTools::makePlane( llCorner,        uVec, vVec, osg::Vec2s( resX-1, resY-1 ) );
+    osgbDynamics::SoftBody* geom = new osgbDynamics::SoftBody;
+    //osg::Geometry* geom = new osg::Geometry;
+    osg::Vec3Array * verts=new osg::Vec3Array();
+    osg::Vec3Array * norms=new osg::Vec3Array();
+    osg::Vec2Array * texarray=new osg::Vec2Array();
+    for(short j=0;j<resY;j++)
+    {
+        const float	ty=j/(float)(resY-1);
+        for(short i=0;i<resX;i++)
+        {
+            const float	tx=i/(float)(resX-1);
+            texarray->push_back(osg::Vec2(tx,ty));
+        }
+    }
+    verts->resize(resX*resY);
+    norms->resize(resX*resY);
+    geom->setNormalArray(norms);
+    geom->setVertexArray(verts);
+    geom->setTexCoordArray(0,texarray);
     geode->addDrawable( geom );
 
     // Set up for dynamic data buffer objects
@@ -121,7 +136,7 @@ osg::Node* makeFlag( btSoftRigidDynamicsWorld* bw )
         lm->setTwoSided( true );
         stateSet->setAttributeAndModes( lm );
 
-        const std::string texName( "fort_mchenry_flag.jpg" );
+        const std::string texName( "Images/evilsmiley.png");//fort_mchenry_flag.jpg" );
         osg::Texture2D* tex( new osg::Texture2D(
             osgDB::readImageFile( texName ) ) );
         if( ( tex == NULL ) || ( tex->getImage() == NULL ) )
@@ -138,13 +153,24 @@ osg::Node* makeFlag( btSoftRigidDynamicsWorld* bw )
     // our update callback will update vertex data from the soft body
     // node data, so it's important that the corners and resolution
     // parameters produce node data that matches the vertex data.
-    btSoftBody* softBody( btSoftBodyHelpers::CreatePatch( worldInfo,
+    btSoftBody* softBody( btSoftBodyHelpers::CreatePatch(  bw->getWorldInfo(),
         osgbCollision::asBtVector3( llCorner ),
         osgbCollision::asBtVector3( llCorner + uVec ),
         osgbCollision::asBtVector3( llCorner + vVec ),
         osgbCollision::asBtVector3( llCorner + uVec + vVec ),
-        resX, resY, 1+4, true ) );
+        resX, resY, 1+4 , true ) );
 
+        ///retrive index from Bullet faces
+
+    #define FILLINDEX(TYPE)  { osg::DrawElements##TYPE * primset=new osg::DrawElements##TYPE(GL_TRIANGLES);\
+    for(int i=0;i<softBody->m_faces.size();i++)\
+        for(short ni=0;ni<3;ni++)\
+            primset->push_back(softBody->m_faces[i].m_n[ni]-&softBody->m_nodes[0]);\
+    geom->addPrimitiveSet(primset);}
+    unsigned int numIndices=softBody->m_faces.size()*3;
+    if(numIndices<128)          FILLINDEX(UShort)
+    else if(numIndices<65535)   FILLINDEX(UByte)
+    else                        FILLINDEX(UInt)
 
     // Configure the soft body for interaction with the wind.
     softBody->getCollisionShape()->setMargin( 0.1 );
@@ -160,11 +186,15 @@ osg::Node* makeFlag( btSoftRigidDynamicsWorld* bw )
     // This doesn't seem to work.
     softBody->m_cfg.aeromodel = btSoftBody::eAeroModel::V_TwoSided;
 #endif
-    softBody->setWindVelocity( btVector3( 50., 0., 0. ) );
-    softBody->setTotalMass( 1. );
-
-    bw->addSoftBody( softBody );
-    geom->setUpdateCallback( new MeshUpdater( softBody, resX*resY ) );
+    softBody->setWindVelocity( btVector3( 40., 0., 0. ) );
+    softBody->setTotalMass( .1 );
+    btTransform m;
+    m.setOrigin(btVector3(0.01,0,0));
+//softBody->setWorldTransform(m);
+  //  bw->addSoftBody( softBody );
+geom->setSoftBody(softBody);
+//return geom;
+   // geom->setUpdateCallback( new MeshUpdater( softBody) );
 
     return( geode.release() );
 }
@@ -173,26 +203,37 @@ btSoftRigidDynamicsWorld* initPhysics()
 {
     btSoftBodyRigidBodyCollisionConfiguration* collision = new btSoftBodyRigidBodyCollisionConfiguration();
     btCollisionDispatcher* dispatcher = new btCollisionDispatcher( collision );
-    worldInfo.m_dispatcher = dispatcher;
+
     btConstraintSolver* solver = new btSequentialImpulseConstraintSolver;
 
     btVector3 worldAabbMin( -10000, -10000, -10000 );
     btVector3 worldAabbMax( 10000, 10000, 10000 );
     btBroadphaseInterface* broadphase = new btAxisSweep3( worldAabbMin, worldAabbMax, 1000 );
-    worldInfo.m_broadphase = broadphase;
+
 
     btSoftRigidDynamicsWorld* dynamicsWorld = new btSoftRigidDynamicsWorld( dispatcher, broadphase, solver, collision );
 
-    btVector3 gravity( 0, 0, -32.17 );
+    btVector3 gravity( 0, 0, -10.17 );
     dynamicsWorld->setGravity( gravity );
+    #if 0
     worldInfo.m_gravity = gravity;
-
+    worldInfo.m_broadphase = broadphase;
     worldInfo.air_density = btScalar( 1.2 );
     worldInfo.water_density = 0;
     worldInfo.water_offset = 0;
     worldInfo.water_normal = btVector3( 0, 0, 0 );
     worldInfo.m_sparsesdf.Initialize();
-
+  worldInfo.m_dispatcher = dispatcher;
+  #else
+       dynamicsWorld->getWorldInfo().m_gravity = gravity;
+     dynamicsWorld->getWorldInfo().m_broadphase = broadphase;
+     dynamicsWorld->getWorldInfo().air_density = btScalar( 1.2 );
+     dynamicsWorld->getWorldInfo().water_density = 0;
+     dynamicsWorld->getWorldInfo().water_offset = 0;
+     dynamicsWorld->getWorldInfo().water_normal = btVector3( 0, 0, 0 );
+     dynamicsWorld->getWorldInfo().m_sparsesdf.Initialize();
+   dynamicsWorld->getWorldInfo().m_dispatcher = dispatcher;
+  #endif
     return( dynamicsWorld );
 }
 
@@ -203,10 +244,11 @@ int main( int argc, char** argv )
     const bool debugDisplay( arguments.find( "--debug" ) > 0 );
 
     btSoftRigidDynamicsWorld* bw = initPhysics();
-    osg::Group* root = new osg::Group;
-
+     osgbDynamics::World* root = new osgbDynamics::World;
+root->setWorldType(osgbDynamics::World::RIGID_AND_SOFT);
+root->setDynamicsWorld(bw);
     osg::Group* launchHandlerAttachPoint = new osg::Group;
-    root->addChild( launchHandlerAttachPoint );
+
 
 
     osg::ref_ptr< osg::Node > rootModel( makeFlag( bw ) );
@@ -217,7 +259,7 @@ int main( int argc, char** argv )
     }
 
     root->addChild( rootModel.get() );
-
+ root->addChild( launchHandlerAttachPoint );
 
 //    osg::ref_ptr< osgbInteraction::SaveRestoreHandler > srh = new        osgbInteraction::SaveRestoreHandler;
 
@@ -240,6 +282,12 @@ int main( int argc, char** argv )
     osgViewer::Viewer viewer( arguments );
     viewer.addEventHandler( new osgViewer::StatsHandler() );
     //viewer.setUpViewInWindow( 30, 30, 768, 480 );
+
+
+    /**/   osgDB::writeNodeFile(*root,"fok.osgt");
+    root=(osgbDynamics::World*)osgDB::readNodeFile("fok.osgt");
+  root->setDebugEnabled(true);
+
     viewer.setSceneData( root );
 
     osgGA::TrackballManipulator* tb = new osgGA::TrackballManipulator;
@@ -250,11 +298,11 @@ int main( int argc, char** argv )
 
     // Create the launch handler.
     osgbInteraction::LaunchHandler* lh = new osgbInteraction::LaunchHandler(
-        bw, launchHandlerAttachPoint, viewer.getCamera() );
+        static_cast<btSoftRigidDynamicsWorld*>(root->getDynamicsWorld()), launchHandlerAttachPoint  );
     {
         // Use a custom launch model: Sphere with radius 0.2 (instead of default 1.0).
         osg::Geode* geode = new osg::Geode;
-        const double radius( .2 );
+        const double radius( 1 );
         geode->addDrawable( new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(),radius)));//osgwTools::makeGeodesicSphere( radius ) );
         lh->setLaunchModel( geode, new btSphereShape( radius ) );
         lh->setInitialVelocity( 40. );
@@ -266,17 +314,20 @@ int main( int argc, char** argv )
     srh->capture();
     viewer.addEventHandler( srh.get() );*/
     viewer.addEventHandler( new osgbInteraction::DragHandler(
-        bw, viewer.getCamera() ) );
+       static_cast<btSoftRigidDynamicsWorld*>(root->getDynamicsWorld()), viewer.getCamera() ) );
 
 
     double prevSimTime = 0.;
+
+    return viewer.run();
+
     while( !viewer.done() )
     {
         if( dbgDraw != NULL )
             dbgDraw->BeginDraw();
 
         const double currSimTime = viewer.getFrameStamp()->getSimulationTime();
-        bw->stepSimulation( currSimTime - prevSimTime );
+       // bw->stepSimulation( currSimTime - prevSimTime );
         prevSimTime = currSimTime;
 
         if( dbgDraw != NULL )
@@ -285,7 +336,7 @@ int main( int argc, char** argv )
             dbgDraw->EndDraw();
         }
 
-        worldInfo.m_sparsesdf.GarbageCollect();
+         static_cast<btSoftRigidDynamicsWorld*>(root->getDynamicsWorld())->getWorldInfo().m_sparsesdf.GarbageCollect();
 
         viewer.frame();
     }

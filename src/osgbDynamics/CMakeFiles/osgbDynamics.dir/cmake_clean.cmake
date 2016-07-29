@@ -5,6 +5,8 @@ FILE(REMOVE_RECURSE
   "CMakeFiles/osgbDynamics.dir/MotionState.cpp.o"
   "CMakeFiles/osgbDynamics.dir/PhysicsThread.cpp.o"
   "CMakeFiles/osgbDynamics.dir/RigidBody.cpp.o"
+  "CMakeFiles/osgbDynamics.dir/SoftBody.cpp.o"
+  "CMakeFiles/osgbDynamics.dir/Joint.cpp.o"
   "CMakeFiles/osgbDynamics.dir/RigidBodyAnimation.cpp.o"
   "CMakeFiles/osgbDynamics.dir/TripleBuffer.cpp.o"
   "CMakeFiles/osgbDynamics.dir/World.cpp.o"

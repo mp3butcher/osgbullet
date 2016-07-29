@@ -7,10 +7,12 @@ SET(CMAKE_DEPENDS_CHECK_CXX
   "/home/pascal/SRC/osgbullet/src/osgbDynamics/Constraints.cpp" "/home/pascal/SRC/osgbullet/src/osgbDynamics/CMakeFiles/osgbDynamics.dir/Constraints.cpp.o"
   "/home/pascal/SRC/osgbullet/src/osgbDynamics/CreationRecord.cpp" "/home/pascal/SRC/osgbullet/src/osgbDynamics/CMakeFiles/osgbDynamics.dir/CreationRecord.cpp.o"
   "/home/pascal/SRC/osgbullet/src/osgbDynamics/GroundPlane.cpp" "/home/pascal/SRC/osgbullet/src/osgbDynamics/CMakeFiles/osgbDynamics.dir/GroundPlane.cpp.o"
+  "/home/pascal/SRC/osgbullet/src/osgbDynamics/Joint.cpp" "/home/pascal/SRC/osgbullet/src/osgbDynamics/CMakeFiles/osgbDynamics.dir/Joint.cpp.o"
   "/home/pascal/SRC/osgbullet/src/osgbDynamics/MotionState.cpp" "/home/pascal/SRC/osgbullet/src/osgbDynamics/CMakeFiles/osgbDynamics.dir/MotionState.cpp.o"
   "/home/pascal/SRC/osgbullet/src/osgbDynamics/PhysicsThread.cpp" "/home/pascal/SRC/osgbullet/src/osgbDynamics/CMakeFiles/osgbDynamics.dir/PhysicsThread.cpp.o"
   "/home/pascal/SRC/osgbullet/src/osgbDynamics/RigidBody.cpp" "/home/pascal/SRC/osgbullet/src/osgbDynamics/CMakeFiles/osgbDynamics.dir/RigidBody.cpp.o"
   "/home/pascal/SRC/osgbullet/src/osgbDynamics/RigidBodyAnimation.cpp" "/home/pascal/SRC/osgbullet/src/osgbDynamics/CMakeFiles/osgbDynamics.dir/RigidBodyAnimation.cpp.o"
+  "/home/pascal/SRC/osgbullet/src/osgbDynamics/SoftBody.cpp" "/home/pascal/SRC/osgbullet/src/osgbDynamics/CMakeFiles/osgbDynamics.dir/SoftBody.cpp.o"
   "/home/pascal/SRC/osgbullet/src/osgbDynamics/TripleBuffer.cpp" "/home/pascal/SRC/osgbullet/src/osgbDynamics/CMakeFiles/osgbDynamics.dir/TripleBuffer.cpp.o"
   "/home/pascal/SRC/osgbullet/src/osgbDynamics/World.cpp" "/home/pascal/SRC/osgbullet/src/osgbDynamics/CMakeFiles/osgbDynamics.dir/World.cpp.o"
   )

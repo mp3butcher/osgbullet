@@ -314,6 +314,28 @@ list
 string
 -
 
+/home/pascal/SRC/OSGmyGIT/include/osg/Geode
+osg/Node
+-
+osg/NodeVisitor
+-
+osg/Drawable
+-
+
+/home/pascal/SRC/OSGmyGIT/include/osg/Geometry
+osg/Drawable
+-
+osg/Vec2
+-
+osg/Vec3
+-
+osg/Vec4
+-
+osg/Array
+-
+osg/PrimitiveSet
+-
+
 /home/pascal/SRC/OSGmyGIT/include/osg/GraphicsContext
 osg/State
 -
@@ -994,6 +1016,20 @@ typeinfo
 stdexcept
 -
 string
+-
+
+/home/pascal/SRC/OSGmyGIT/include/osgUtil/Export
+osg/Config
+-
+
+/home/pascal/SRC/OSGmyGIT/include/osgUtil/SmoothingVisitor
+osg/NodeVisitor
+-
+osg/Geode
+-
+osg/Geometry
+-
+osgUtil/Export
 -
 
 /home/pascal/SRC/bullet3/src/BulletCollision/BroadphaseCollision/btAxisSweep3.h
@@ -1911,6 +1947,12 @@ osg/ref_ptr
 -
 osg/io_utils
 -
+osgbCollision/Utils.h
+-
+osgUtil/SmoothingVisitor
+-
+osgbDynamics/TripleBuffer.h
+-
 
 include/osgbCollision/AbsoluteModelTransform.h
 osg/NodeVisitor
@@ -1931,6 +1973,14 @@ btBulletCollisionCommon.h
 -
 
 include/osgbCollision/Export.h
+
+include/osgbCollision/RefBulletObject.h
+osgbCollision/Export.h
+-
+osg/Referenced
+-
+BulletCollision/CollisionDispatch/btCollisionObject.h
+-
 
 include/osgbCollision/Utils.h
 osgbCollision/Export.h
@@ -1964,6 +2014,14 @@ string
 
 include/osgbDynamics/Export.h
 
+include/osgbDynamics/Joint.h
+osgbDynamics/Export.h
+-
+osg/Object
+-
+BulletDynamics/ConstraintSolver/btTypedConstraint.h
+-
+
 include/osgbDynamics/MotionState.h
 osg/MatrixTransform
 -
@@ -1989,14 +2047,34 @@ btBulletDynamicsCommon.h
 -
 BulletSoftBody/btSoftBody.h
 -
+osg/Geometry
+-
+osg/MatrixTransform
+-
+osgbCollision/AbsoluteModelTransform.h
+-
+osgbCollision/RefBulletObject.h
+-
+osgbDynamics/Joint.h
+-
+
+include/osgbDynamics/TripleBuffer.h
+osgbDynamics/Export.h
+-
+OpenThreads/Mutex
+-
+iostream
+-
+stdlib.h
+-
 
 include/osgbDynamics/World.h
-osg/Node
+osg/Group
 -
 osg/ShapeDrawable
 -
 osgbDynamics/RigidBody.h
 -
-BulletDynamics/Dynamics/btDynamicsWorld.h
+BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h
 -
 

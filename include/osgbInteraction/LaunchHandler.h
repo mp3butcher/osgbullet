@@ -24,6 +24,7 @@
 
 #include <osgbInteraction/Export.h>
 #include <osgbDynamics/MotionState.h>
+#include <osgbDynamics/World.h>
 #include <osgGA/GUIEventHandler>
 #include <btBulletDynamicsCommon.h>
 #include <osg/ref_ptr>
@@ -74,7 +75,11 @@ public:
     \param camera LaunchHandler uses this Camera to compute the launch direction
     vector from the mouse position.
     */
-    LaunchHandler( btDynamicsWorld* dw, osg::Group* attachPoint, osg::Camera* camera=NULL );
+    META_Object(osgbInteraction,LaunchHandler);
+
+    LaunchHandler( );
+    LaunchHandler(  const  LaunchHandler&copy,osg::CopyOp op=osg::CopyOp::SHALLOW_COPY );
+    LaunchHandler( osgbDynamics::World* dw, osg::Group* attachPoint);
 
     /** \brief Handle events.
 
@@ -105,7 +110,7 @@ public:
     \param shape Specify a collision shape for the model. If \c shape is NULL (the default),
     this function creates a convex hull collision shape from \c model, using its bounding
     sphere for center of mass, and default scaling of 1.0 in all axes.
-    
+
     Future work: Calling this function with a NULL \c model should cause the default launch
     model to be recreated and used for subsequent launches. */
     void setLaunchModel( osg::Node* model, btCollisionShape* shape=NULL );
@@ -128,18 +133,23 @@ public:
 
     /** \brief Specify the camera used to compute the launch direction vector, if not
     specified in the constructor. */
-    void setCamera( osg::Camera* camera ) { _camera = camera; }
+   // void setCamera( osg::Camera* camera ) { _camera = camera; }
 
     /** \brief Remove all launched models from the scene graph and physics simultation.
     */
     void reset();
 
+    void setWorld(osgbDynamics::World*w){_world=w;}
+    osgbDynamics::World* getWorld()const {return _world;}
+    void setAttachPoint( osg::Group *w){_attachPoint=w;}
+     osg::Group * getAttachPoint()const {return _attachPoint;}
 protected:
     ~LaunchHandler();
 
-    btDynamicsWorld* _dw;
+    osg::ref_ptr<osgbDynamics:: World> _world;
+    //btDynamicsWorld* _dw;
     osg::ref_ptr< osg::Group > _attachPoint;
-    osg::ref_ptr< osg::Camera > _camera;
+    //osg::ref_ptr< osg::Camera > _camera;
 
     osg::ref_ptr< osg::Node > _launchModel;
     btCollisionShape* _launchCollisionShape;

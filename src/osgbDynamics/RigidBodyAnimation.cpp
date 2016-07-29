@@ -23,6 +23,7 @@
 #include <osgbCollision/Utils.h>
 #include <btBulletDynamicsCommon.h>
 #include <osg/MatrixTransform>
+#include <osgbDynamics/RigidBody.h>
 
 #include <osg/Notify>
 #include <osg/io_utils>
@@ -42,31 +43,32 @@ RigidBodyAnimation::RigidBodyAnimation( void )
 
 void RigidBodyAnimation::operator()( osg::Node* node, osg::NodeVisitor* nv )
 {
-    osg::MatrixTransform* matTrans = dynamic_cast< osg::MatrixTransform* >( node );
-    if( node == NULL )
+osg::MatrixTransform* matTrans = static_cast< osg::MatrixTransform* >( node);
+/*   if( node == NULL )
     {
         return;
     }
 
     osgbCollision::RefBulletObject< btRigidBody >* rb = dynamic_cast<
-        osgbCollision::RefBulletObject< btRigidBody >* >( matTrans->getUserData() );
+        osgbCollision::RefBulletObject< btRigidBody >* >( matTrans->getUserData
     if( rb == NULL )
     {
-        osg::notify( osg::WARN ) << "RigidBodyAnimation requires RefBulletObject<btRigidBody> in Node::UserData." << std::endl;
+        osg::notify( osg::WARN ) << "RigidBodyAnimation requires RefBulletObjec
         return;
-    }
+    }*/
 
-    btRigidBody* body = rb->get();
-    if( body->getInvMass() != 0.0 )
+osgbDynamics::RigidBody* rig=dynamic_cast<osgbDynamics::RigidBody*> (matTrans->getUpdateCallback());
+    btRigidBody* body = rig->getRigidBody();
+    if( body->getInvMass() != 0.0 ||!rig->getParentWorld())
     {
-        return;
-    }
+        traverse( node, nv );;
+   }
 
     osg::Matrix mat = matTrans->getMatrix();
-    rb->get()->getMotionState()->setWorldTransform(
+    body->getMotionState()->setWorldTransform(
         osgbCollision::asBtTransform( mat ) );
-
     traverse( node, nv );
+
 }
 
 

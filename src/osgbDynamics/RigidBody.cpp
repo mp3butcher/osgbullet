@@ -31,10 +31,69 @@
 #include <osg/Notify>
 #include <osg/ref_ptr>
 #include <osg/io_utils>
-
+#include <osgbCollision/Utils.h>
+#include <osgUtil/SmoothingVisitor>
+#include <osgbDynamics/TripleBuffer.h>
 
 namespace osgbDynamics
 {
+
+///motion state assuming drawable centered on their center of mass
+class RigidBodyMotionState : public MotionState
+{
+public:
+    virtual void setWorldTransform(const btTransform& worldTrans)
+    {
+        // Call the callback, if registered.
+        if( _mscl.size() > 0 )
+        {
+            // Call only if position changed.
+            const btVector3 delta( worldTrans.getOrigin() - _transform.getOrigin() );
+            const btScalar eps( (btScalar)( 1e-5 ) );
+            const bool quiescent( osg::equivalent( delta[ 0 ], btScalar(0.), eps ) &&
+                                  osg::equivalent( delta[ 1 ], btScalar(0.), eps ) &&
+                                  osg::equivalent( delta[ 2 ], btScalar(0.), eps ) );
+            if( !quiescent )
+            {
+                MotionStateCallbackList::iterator it;
+                for( it = _mscl.begin(); it != _mscl.end(); ++it )
+                    (**it)( worldTrans );
+            }
+        }
+
+        // _transform is the model-to-world transformation used to place collision shapes
+        // in the physics simulation. Bullet queries this with getWorldTransform().
+        _transform = worldTrans;
+
+        if( _tb == NULL )
+        {
+            // setWorldTransformInternal( worldTrans );
+
+            const osg::Matrix dt = osgbCollision::asOsgMatrix( worldTrans );
+            /* const osg::Matrix col2ol = computeCOLocalToOsgLocal();
+             const osg::Matrix t = col2ol * dt;*/
+
+            if( _mt.valid() )
+                _mt->setMatrix( dt );
+            else if( _amt.valid() )
+                _amt->setMatrix( dt );
+
+
+        }
+        else
+        {
+            char* addr( _tb->writeAddress() );
+            if( addr == NULL )
+            {
+                osg::notify( osg::WARN ) << "MotionState: No TripleBuffer write address." << std::endl;
+                return;
+            }
+            btScalar* fAddr = reinterpret_cast< btScalar* >( addr + _tbIndex );
+            worldTrans.getOpenGLMatrix( fAddr );
+        }
+    }
+
+};
 
 class FindParentVisitor : public osg::NodeVisitor
 {
@@ -44,13 +103,16 @@ public:
 
     void apply( osg::Node& node )
     {
-        osg::Callback* cb = node.getUpdateCallback();
+
+        if( !foundWorld )
+            foundWorld = dynamic_cast<World*>(&node);
+        /*osg::Callback* cb = node.getUpdateCallback();
         while ( cb && !foundWorld )
         {
             foundWorld = dynamic_cast<World*>(cb);
 
             cb = cb->getNestedCallback();
-        }
+        }*/
         traverse( node );
     }
 
@@ -58,7 +120,7 @@ public:
 };
 
 
-
+/*
 void PhysicalObject::operator()( osg::Node* node, osg::NodeVisitor* nv )
 {
 
@@ -74,24 +136,163 @@ void PhysicalObject::operator()( osg::Node* node, osg::NodeVisitor* nv )
 }
 
 PhysicalObject::~PhysicalObject() {}
-
-RigidBody::RigidBody() {}
-RigidBody::~RigidBody() {}
-void RigidBody::updatematrix( osg::Node* node, osg::NodeVisitor* nv )
+*/
+RigidBody::RigidBody():_parentWorld(0),_body(0) {}
+RigidBody::~RigidBody()
 {
-osg::Matrix subMatrix=osgbCollision::asOsgMatrix(  _body->getWorldTransform());
-    osg::MatrixTransform* mt = dynamic_cast<osg::MatrixTransform*>(node);
-    if ( mt )
+    if(getRigidBody())
     {
-        mt->setMatrix( subMatrix );
+        if(_parentWorld)_parentWorld->getDynamicsWorld()->removeRigidBody(getRigidBody());
+        delete getRigidBody();
     }
 }
+RigidBody::RigidBody( const RigidBody& copy, const osg::CopyOp& copyop ) {}
+/*const btRigidBody* RigidBody::getRigidBody()const
+{
+    const   osgbCollision::RefBulletObject<  btRigidBody >*  refptr=
+        dynamic_cast<  const   osgbCollision::RefBulletObject<  btRigidBody >* >( getUserData() );
+
+    return (refptr?refptr->get():0);
+}
+
+btRigidBody* RigidBody::getRigidBody()
+{
+    osgbCollision::RefBulletObject<  btRigidBody >*  refptr=
+        dynamic_cast<     osgbCollision::RefBulletObject<  btRigidBody >* >( getUserData() );
+
+    return (refptr?refptr->get():0);
+}
+
+void RigidBody::setRigidBody( btRigidBody *b )
+{
+    setUserData(new osgbCollision::RefBulletObject<btRigidBody>(b));
+    //btRigidBody >* rb = dynamic_cast<        osgbCollision::RefBulletObject<  >* >();
+
+
+}*/
+void RigidBody::addJoint(Joint*p)
+{
+    for(std::vector< Joint* >::iterator i=_joints.begin(); i!=_joints.end(); i++)
+        if(*i ==p)return;
+
+    _joints.push_back(p);
+    if(_parentWorld)_parentWorld->addJoint(p);
+}
+void RigidBody::removeJoint(Joint*p)
+{
+    for(std::vector< Joint* >::iterator i=_joints.begin(); i!=_joints.end(); i++)
+    {
+        if(*i ==p)
+        {
+            _joints.erase(i);
+            if(_parentWorld)_parentWorld->removeJoint(p);
+            return;
+        }
+    }
+}
+
+void RigidBody::operator()( osg::Node* node, osg::NodeVisitor* nv )
+{
+
+    if ( !_parentWorld)
+    {
+        FindParentVisitor fpv;
+        node->accept(fpv);
+        _parentWorld=fpv.foundWorld;
+        //addPhysicalObjectToParentWorld(static_cast<osg::MatrixTransform*>(node));
+         if(_body){
+         if(!dynamic_cast<osgbDynamics::RigidBodyMotionState*>(_body->getMotionState()))
+                {
+///_body is not compatible with osgBullet RigidBody so transform it
+
+                    btMotionState * ms=_body->getMotionState();
+                    btTransform trans;
+                    trans=_body->getWorldTransform();
+
+                    osgbDynamics::RigidBodyMotionState *osgms= new osgbDynamics::RigidBodyMotionState();
+                     osg::MatrixTransform* mat=dynamic_cast<osg::MatrixTransform*>(node);
+                    osgms->setTransform(mat);
+                    osgms->setWorldTransform(trans);
+                    osgms->setParentTransform(mat->getMatrix());
+                    _body->setMotionState(osgms);
+                    if (ms)delete ms;
+
+
+                }
+            _parentWorld->getDynamicsWorld()->addRigidBody(_body);
+            }
+    }
+ //   updatematrix(node,nv);
+    traverse( node, nv );
+}
+/*
+void RigidBody::operator()(osg::Node*node,osg::NodeVisitor *nv)
+{
+
+    //not sure update visitor will be applied if(nv.getVisitorType()==osg::NodeVisitor::UPDATE_VISITOR)
+    if ( !_parentWorld)
+    {
+        if(node->getNumParents()!=0)
+        {
+            FindParentVisitor fpv;
+            for ( unsigned int i=0; i<node->getNumParents(); ++i )
+            {
+                node->getParent(i)->accept( fpv );
+                if ( fpv.foundWorld )break;
+            }
+            //this->accept(fpv);
+            _parentWorld=fpv.foundWorld;
+            btRigidBody *b=getRigidBody();
+            if(b)
+            {
+                if(!dynamic_cast<osgbDynamics::RigidBodyMotionState*>(b->getMotionState()))
+                {
+///_body is not compatible with osgBullet RigidBody so transform it
+
+                    btMotionState * ms=b->getMotionState();
+                    btTransform trans;
+                    trans=b->getWorldTransform();
+
+                    osgbDynamics::RigidBodyMotionState *osgms= new osgbDynamics::RigidBodyMotionState();
+                    osg::MatrixTransform* mat=dynamic_cast<osg::MatrixTransform*>(node);
+                    osgms->setTransform(mat);
+                    osgms->setWorldTransform(trans);
+                    osgms->setParentTransform(mat->getMatrix());
+                    b->setMotionState(osgms);
+                    if (ms)delete ms;
+
+
+                }
+                addPhysicalObjectToParentWorld();
+            }
+        }
+    }
+    // updatematrix(node,nv);
+    //  osg::MatrixTransform::traverse(   nv );
+
+
+    traverse( node, nv );
+}*/
 void RigidBody::addPhysicalObjectToParentWorld()
 {
     if(_parentWorld)
     {
-        if(_body)
-            _parentWorld->getDynamicsWorld()->addRigidBody(_body);
+        btRigidBody*b;
+        if(b=getRigidBody())
+        {
+            if(_parentWorld->getDynamicsWorld()->getCollisionObjectArray().findLinearSearch(b) == _parentWorld->getDynamicsWorld()->getCollisionObjectArray().size())
+                _parentWorld->getDynamicsWorld()->addRigidBody(b);
+            for(std::vector< Joint* >::iterator i=_joints.begin(); i!=_joints.end(); i++)
+            {
+                _parentWorld->addJoint(*i);
+            }
+
+            if(_parentWorld->getDebugEnabled())
+            {
+                _parentWorld-> setDebugEnabled(false);
+                _parentWorld-> setDebugEnabled(true);
+            }
+        }
         else
         {
             OSG_WARN<<"RigidBody: btRigidBody is not setted"<<std::endl;
@@ -103,42 +304,9 @@ void RigidBody::addPhysicalObjectToParentWorld()
     }
 
 }
-SoftBody::SoftBody() {}
-SoftBody::~SoftBody() {}
-void SoftBody::updatematrix( osg::Node* node, osg::NodeVisitor* nv )
-{
-osg::Matrix subMatrix=osgbCollision::asOsgMatrix(  _body->getWorldTransform());
-    osg::MatrixTransform* mt = dynamic_cast<osg::MatrixTransform*>(node);
-    if ( mt )
-    {
-        mt->setMatrix( subMatrix );
-    }
-}
-void SoftBody::addPhysicalObjectToParentWorld()
-{
-    if(_parentWorld)
-    {
-        if(_body){
-            btSoftRigidDynamicsWorld* w=dynamic_cast<   btSoftRigidDynamicsWorld*>(_parentWorld->getDynamicsWorld());
-            if(w)
-            w->addSoftBody(_body);
-             else
-        {
-            OSG_WARN<<"SoftBody: try to add SoftBody to a rigid word"<<std::endl;
-        }
 
-            }
-        else
-        {
-            OSG_WARN<<"SoftBody: btSoftBody is not setted"<<std::endl;
-        }
-    }
-    else
-    {
-        OSG_WARN<<"SoftBody: parentworld hasn't been found"<<std::endl;
-    }
+//////////////HELPERS//////////////////////////
 
-}
 btRigidBody* createRigidBody( osgbDynamics::CreationRecord* cr )
 {
     osg::Node* root = cr->_sceneGraph;

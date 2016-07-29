@@ -1,3 +1,3 @@
-_osgBulletMakeDynamicsExe( BasicDemo
+_osgBulletMakeInteractionExe( BasicDemo
     BasicDemo.cpp
 )

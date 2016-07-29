@@ -229,7 +229,7 @@ int main( int argc, char** argv )
 
     // Create the launch handler.
     osgbInteraction::LaunchHandler* lh = new osgbInteraction::LaunchHandler(
-        bulletWorld, launchHandlerAttachPoint, viewer.getCamera() );
+        bulletWorld, launchHandlerAttachPoint );
     {
         // Use a custom launch model: Sphere with radius 0.5 (instead of default 1.0).
         osg::Geode* geode = new osg::Geode;

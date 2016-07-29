@@ -72,6 +72,8 @@ IF(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "libosgb
     "/home/pascal/SRC/osgbullet/include/osgbDynamics/MotionState.h"
     "/home/pascal/SRC/osgbullet/include/osgbDynamics/PhysicsThread.h"
     "/home/pascal/SRC/osgbullet/include/osgbDynamics/RigidBody.h"
+    "/home/pascal/SRC/osgbullet/include/osgbDynamics/Joint.h"
+    "/home/pascal/SRC/osgbullet/include/osgbDynamics/SoftBody.h"
     "/home/pascal/SRC/osgbullet/include/osgbDynamics/RigidBodyAnimation.h"
     "/home/pascal/SRC/osgbullet/include/osgbDynamics/TripleBuffer.h"
     "/home/pascal/SRC/osgbullet/include/osgbDynamics/World.h"

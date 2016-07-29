@@ -37,11 +37,21 @@
 namespace osgbInteraction
 {
 
+LaunchHandler::LaunchHandler():_world( 0 ), _attachPoint( 0 ),
+    //_camera( camera ),
+    _launchCollisionShape( NULL ),
+    _initialVelocity( 10. ),
+    _group( 0 ),
+    _mask( 0 ),
+    _pt( NULL ),
+    _tb( NULL ),
+    _msl( NULL ){}
 
-LaunchHandler::LaunchHandler( btDynamicsWorld* dw, osg::Group* attachPoint, osg::Camera* camera )
-  : _dw( dw ),
+LaunchHandler::LaunchHandler(  const  LaunchHandler&copy,osg::CopyOp op ){}
+LaunchHandler::LaunchHandler( osgbDynamics::World* dw, osg::Group* attachPoint )
+  : _world( dw ),
     _attachPoint( attachPoint ),
-    _camera( camera ),
+    //_camera( camera ),
     _launchCollisionShape( NULL ),
     _initialVelocity( 10. ),
     _group( 0 ),
@@ -95,7 +105,7 @@ void LaunchHandler::setLaunchModel( osg::Node* model, btCollisionShape* shape )
     }
 }
 
-bool LaunchHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& )
+bool LaunchHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter&aa )
 {
     // We want a shift-leftmouse event. Return false if we don't have it.
     if( ( ea.getEventType() != osgGA::GUIEventAdapter::PUSH ) ||
@@ -103,11 +113,11 @@ bool LaunchHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAd
         ( ( ea.getModKeyMask() & osgGA::GUIEventAdapter::MODKEY_SHIFT ) == 0 ) )
         return( false );
 
-    osg::Matrix view = _camera->getViewMatrix();
+    osg::Matrix view = aa.asView()->getCamera()->getViewMatrix();
     osg::Vec3 look, at, up;
     view.getLookAt( look, at, up );
 
-    osg::Matrix proj = _camera->getProjectionMatrix();
+    osg::Matrix proj = aa.asView()->getCamera()->getProjectionMatrix();
     double fovy, aspect, zNear, zFar;
     proj.getPerspective( fovy, aspect, zNear, zFar );
 
@@ -148,10 +158,13 @@ bool LaunchHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAd
 
     bool added( false );
     amt->setUserData( new osgbCollision::RefRigidBody( rb ) );
+    btDiscreteDynamicsWorld* ddw =0;
+    if(_world.valid() &&   ( ddw=_world->getDynamicsWorld()) )
     if( (_group != 0) || (_mask != 0) )
     {
-        // Collision filters were specified. Get the discrete dynamics world.
-        btDiscreteDynamicsWorld* ddw = dynamic_cast< btDiscreteDynamicsWorld* >( _dw );
+        // Collision filters were specified. Get the discrete dynamics world
+
+       // btDiscreteDynamicsWorld* ddw = dynamic_cast< btDiscreteDynamicsWorld* >( _dw );
         if( ddw != NULL )
         {
             ddw->addRigidBody( rb, _group, _mask );
@@ -162,7 +175,7 @@ bool LaunchHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAd
     {
         // This is both the main path for not using collision filters, and
         // also the fallback if the btDiscreteDynamicsWorld* dynamic cast fails.
-        _dw->addRigidBody( rb );
+        ddw->addRigidBody( rb );
     }
 
     if( _pt != NULL )
@@ -176,7 +189,8 @@ void LaunchHandler::reset()
     if( _pt != NULL )
         _pt->pause( true );
 
-    NodeList::iterator it;
+    NodeList::iterator it;    btDiscreteDynamicsWorld* ddw =0;
+    if(_world.valid() &&   ( ddw=_world->getDynamicsWorld()) )
     for( it=_nodeList.begin(); it != _nodeList.end(); ++it )
     {
         osg::ref_ptr< osg::Node > node = *it;
@@ -199,7 +213,7 @@ void LaunchHandler::reset()
             }
             delete motion;
         }
-        _dw->removeRigidBody( rb );
+        ddw->removeRigidBody( rb );
         delete rb;
         _attachPoint->removeChild( node.get() );
     }

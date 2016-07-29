@@ -15,19 +15,21 @@
 #ifndef OSGBDYNAMICS_BTWORLD
 #define OSGBDYNAMICS_BTWORLD 1
 
-#include <osg/Node>
+#include <osg/Group>
 #include <osg/ShapeDrawable>
 
 #include <osgbDynamics/RigidBody.h>
-#include <BulletDynamics/Dynamics/btDynamicsWorld.h>
-
+#include <BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h>
+namespace osgbCollision{
+class GLDebugDrawer;
+}
 namespace osgbDynamics
 {
 
 
 
 /** The basic element of the physics abstract layer */
-class OSGBDYNAMICS_EXPORT  World : public osg::NodeCallback
+class OSGBDYNAMICS_EXPORT  World : public osg::Group
 {
 public:
     typedef enum
@@ -37,29 +39,32 @@ public:
     } WorldType;
     World();
     World( const World& copy, const osg::CopyOp& copyop=osg::CopyOp::SHALLOW_COPY );
-META_Object(osgbDynamics,World)
-   /* virtual bool isSameKindAs( const osg::Object* obj ) const
-    {
-        return dynamic_cast<const World*>(obj)!=NULL;
-    }
-    virtual const char* libraryName () const
-    {
-        return "osgbDynamics";
-    }
-    virtual const char* className () const
-    {
-        return "World";
-    }*/
+  virtual osg::Object* cloneType() const { return new World (); }
+        virtual osg::Object* clone(const osg::CopyOp& copyop) const { return new World (*this,copyop); }
+        virtual bool isSameKindAs(const osg::Object* obj) const { return dynamic_cast<const World *>(obj)!=NULL; }
+        virtual const char* className() const { return "World"; }
+        virtual const char* libraryName() const { return "osgbDynamics"; }
+        virtual void accept(osg::NodeVisitor& nv) { if (nv.validNodeMask(*this)) { nv.pushOntoNodePath(this);
+         //nv.apply(*this);
+        ///forcedupdatetraversal
+        if(nv.getVisitorType()==osg::NodeVisitor::UPDATE_VISITOR)traverse(nv);
+        else nv.apply(*this);
+         //if (nv.getTraversalMode()==osg::NodeVisitor::TRAVERSE_PARENTS) nv.apply(*this);
+           // else if (nv.getTraversalMode()!=osg::NodeVisitor::TRAVERSE_NONE) traverse(nv);
+        nv.popFromNodePath();
+        } }
 
-    btDynamicsWorld * getDynamicsWorld()
+
+
+    btDiscreteDynamicsWorld * getDynamicsWorld()
     {
         return _btworld;
     }
-    const btDynamicsWorld * getDynamicsWorld()const
+    const btDiscreteDynamicsWorld * getDynamicsWorld()const
     {
         return _btworld;
     }
-    void  setDynamicsWorld(btDynamicsWorld *w)
+    void  setDynamicsWorld(btDiscreteDynamicsWorld *w)
     {
         _btworld=w  ;
     }
@@ -71,41 +76,28 @@ META_Object(osgbDynamics,World)
     void setWorldType(WorldType t);
 
     /** Update the element */
-    virtual void update( osg::Node* node, osg::NodeVisitor* nv );
+//   virtual void update( osg::Node* node, osg::NodeVisitor* nv );
 
     /** Do some post work if required */
     //virtual void postevent( osg::Node* node, osg::NodeVisitor* nv ) {}
 
-    virtual void operator()( osg::Node* node, osg::NodeVisitor* nv );
+//    virtual void operator()( osg::Node* node, osg::NodeVisitor* nv );
 
 
-    unsigned int getNumPhysicalObjects()const
+     unsigned int getNumJoints()const
     {
-        return _managed.size();
+        return _joints.size();
     }
-    const PhysicalObject * getPhysicalObject(unsigned int i)const
+   const Joint * getJoint(unsigned int i)const
     {
-        return _managed[i];
+        return _joints[i];
     }
-    PhysicalObject * getPhysicalObject(unsigned int i)
+    Joint * getJoint(unsigned int i)
     {
-        return _managed[i];
+        return _joints[i];
     }
-    void addPhysicalObject(PhysicalObject*p)
-    {
-        _managed.push_back(p);
-    }
-    void removePhysicalObject(PhysicalObject*p)
-    {
-        for(std::vector<osg::ref_ptr<PhysicalObject> >::iterator i=_managed.begin(); i!=_managed.end(); i++)
-        {
-            if(i->get()==p)
-            {
-                _managed.erase(i);
-                return;
-            }
-        }
-    }
+    void addJoint(Joint*p);
+    void removeJoint(Joint*p);
 
     double getDeltaTime()const
     {
@@ -116,13 +108,25 @@ META_Object(osgbDynamics,World)
         _deltaTime=d;
     }
 
+    void setDebugEnabled(bool b);
+
+    bool getDebugEnabled()const{return _debugdraw;}
+
+
+    virtual void traverse(osg::NodeVisitor &nv);
+
 
 protected:
     virtual ~ World();
+    bool _debugdraw;
     WorldType _worldtype;
     double _deltaTime,_prevousReferenceTime;
-    btDynamicsWorld* _btworld;
-    std::vector<osg::ref_ptr<PhysicalObject> > _managed;
+    btDiscreteDynamicsWorld* _btworld;
+    std::vector<osg::ref_ptr<Joint> > _joints;
+    std::vector<osg::ref_ptr<Joint> > _joints2add; ///temporary store in case world isn't setted  (parsed on update traversal)
+    ///inner debug draw
+    osg::ref_ptr<osg::Geode> _debugdrawable;
+    osgbCollision::GLDebugDrawer* dbgDraw;
 };
 
 }

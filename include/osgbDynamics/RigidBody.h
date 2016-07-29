@@ -27,7 +27,12 @@
 #include <btBulletDynamicsCommon.h>
 #include <BulletSoftBody/btSoftBody.h>
 
+#include <osg/Geometry>
+#include <osg/MatrixTransform>
+#include <osgbCollision/AbsoluteModelTransform.h>
+#include <osgbCollision/RefBulletObject.h>
 
+#include <osgbDynamics/Joint.h>
 namespace osgbDynamics
 {
 /** use to filter collisions  **/
@@ -60,39 +65,21 @@ protected:
     CollisionMaskType _group,_mask;
 };
 
-class RigidBody;
-class SoftBody;
-class OSGBDYNAMICS_EXPORT PhysicalObject : public osg::NodeCallback
+
+class OSGBDYNAMICS_EXPORT RigidBody : public  osg::NodeCallback
 {
 public:
-    PhysicalObject():_parentWorld(0) {};
-    PhysicalObject( const PhysicalObject& copy, const osg::CopyOp& copyop=osg::CopyOp::SHALLOW_COPY );
+    RigidBody();
+    RigidBody( const RigidBody& copy, const osg::CopyOp& copyop=osg::CopyOp::SHALLOW_COPY );
+    META_Object(osgbDynamics,RigidBody)
 
-    virtual bool isSameKindAs( const osg::Object* obj ) const
-    {
-        return dynamic_cast<const PhysicalObject*>(obj)!=NULL;
-    }
-    virtual const char* libraryName () const
-    {
-        return "osgbDynamics";
-    }
-    virtual const char* className () const
-    {
-        return "PhysicalObject";
-    }
 
-    virtual RigidBody * asRigidBody()
-    {
-        return 0;
-    }
-    virtual SoftBody * asSoftBody()
-    {
-        return 0;
-    }
-
-    void operator()( osg::Node* node, osg::NodeVisitor* nv );
-
-    const World *getParentWorld()const
+    inline void setRigidBody(btRigidBody*body){_body=body;}
+    inline const btRigidBody* getRigidBody()const{return _body;}
+    inline btRigidBody* getRigidBody(){return _body;}
+    //virtual void traverse(osg::NodeVisitor &nv);
+virtual void operator()( osg::Node* node, osg::NodeVisitor* nv );
+ const World *getParentWorld()const
     {
         return _parentWorld;
     }
@@ -100,103 +87,31 @@ public:
     {
         _parentWorld=c;
     }
-
-protected:
-
-    virtual void updatematrix( osg::Node* node, osg::NodeVisitor* nv )=0;
-    virtual void addPhysicalObjectToParentWorld()=0;
-    ~PhysicalObject();
-    World * _parentWorld;
-
-};
-
-class OSGBDYNAMICS_EXPORT RigidBody : public PhysicalObject
-{
-public:
-    RigidBody();
-    RigidBody( const RigidBody& copy, const osg::CopyOp& copyop=osg::CopyOp::SHALLOW_COPY );
-
-    virtual bool isSameKindAs( const osg::Object* obj ) const
+ unsigned int getNumJoints()const
     {
-        return dynamic_cast<const RigidBody*>(obj)!=NULL;
+        return _joints.size();
     }
-    virtual const char* libraryName () const
+   const Joint * getJoint(unsigned int i)const
     {
-        return "osgbDynamics";
+        return _joints[i];
     }
-    virtual const char* className () const
+    Joint * getJoint(unsigned int i)
     {
-        return "RigidBody";
+        return _joints[i];
     }
-
-    virtual RigidBody * asRigidBody()
-    {
-        return this;
-    }
-
-    void setRigidBody(btRigidBody*body)
-    {
-        _body=body;
-    }
-    btRigidBody* getRigidBody()const
-    {
-        return _body;
-    }
+    void addJoint(Joint*p);
+    void removeJoint(Joint*p);
 protected:
     virtual void addPhysicalObjectToParentWorld();
-    virtual void updatematrix( osg::Node* node, osg::NodeVisitor* nv );
+   // virtual void updatematrix( osg::Node* node, osg::NodeVisitor* nv );
     ~RigidBody();
 
-    osgbDynamics::CreationRecord* cr;
+   // osgbDynamics::CreationRecord* cr;
 
-    btRigidBody* _body;
-    btCollisionShape* _shape ;
-
-
-};
-class OSGBDYNAMICS_EXPORT SoftBody : public PhysicalObject
-{
-public:
-    SoftBody();
-    SoftBody( const SoftBody& copy, const osg::CopyOp& copyop=osg::CopyOp::SHALLOW_COPY );
-
-    virtual bool isSameKindAs( const osg::Object* obj ) const
-    {
-        return dynamic_cast<const SoftBody*>(obj)!=NULL;
-    }
-    virtual const char* libraryName () const
-    {
-        return "osgbDynamics";
-    }
-    virtual const char* className () const
-    {
-        return "SoftBody";
-    }
-    virtual SoftBody * asSoftBody()
-    {
-        return this;
-    }
-    void setSoftBody(btSoftBody*body)
-    {
-        _body=body;
-    }
-    btSoftBody* getRigidBody()const
-    {
-        return _body;
-    }
-
-
-protected:
-
-    virtual void updatematrix( osg::Node* node, osg::NodeVisitor* nv );
-    virtual void addPhysicalObjectToParentWorld();
-    ~SoftBody();
-
-    osgbDynamics::CreationRecord* cr;
-    btSoftBody *_body;
-
-    btCollisionShape* _shape ;
-
+    //btCollisionShape* _shape ;
+    btRigidBody *_body;
+    World * _parentWorld;
+    std::vector< Joint* > _joints;
 
 };
 

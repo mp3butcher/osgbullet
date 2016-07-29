@@ -12,6 +12,8 @@ set( LIB_PUBLIC_HEADERS
    # ${HEADER_PATH}/PhysicsState.h
     ${HEADER_PATH}/PhysicsThread.h
     ${HEADER_PATH}/RigidBody.h
+    ${HEADER_PATH}/Joint.h
+    ${HEADER_PATH}/SoftBody.h
     ${HEADER_PATH}/RigidBodyAnimation.h
     ${HEADER_PATH}/TripleBuffer.h
 
@@ -26,6 +28,8 @@ set( _osgBulletSourceFiles
    # PhysicsState.cpp
     PhysicsThread.cpp
     RigidBody.cpp
+    SoftBody.cpp
+    Joint.cpp
     RigidBodyAnimation.cpp
     TripleBuffer.cpp
     World.cpp

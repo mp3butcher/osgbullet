@@ -18,38 +18,46 @@
  *
  *************** <auto-copyright.pl END do not edit this line> ***************/
 
-#ifndef __OSGBDYAMICS_RIGID_BODY_ANIMATION_H__
-#define __OSGBDYAMICS_RIGID_BODY_ANIMATION_H__ 1
-
-#include <osg/NodeCallback>
+#ifndef __OSGBDYNAMICS_Joint_H__
+#define __OSGBDYNAMICS_Joint_H__  1
 
 #include <osgbDynamics/Export.h>
+#include <osg/Object>
+#include <BulletDynamics/ConstraintSolver/btTypedConstraint.h>
 
-namespace osgbDynamics {
+namespace osgbDynamics
+{
+class World;
+class RigidBody;
 
-
-/** \class RigidBodyAnimation RigidBodyAnimation.h <osgbDynamics/RigidBodyAnimation.h>
-\brief An update callback to reposition a btRigidBody in the Bullet simulation.
-
-This callback repositions an object within the Bullet simulation. Attach it as
-an update callback to an OSG MatrixTransform. The MatrixTransform must have an
-osgbCollision::RefBulletObject< btRigidBody > attached as UserData. */
-class OSGBDYNAMICS_EXPORT RigidBodyAnimation : public osg::NodeCallback
+class OSGBDYNAMICS_EXPORT Joint : public  osg::Object
 {
 public:
-    RigidBodyAnimation(   );
-    RigidBodyAnimation(const RigidBodyAnimation& a,osg::CopyOp op=osg::CopyOp::SHALLOW_COPY  ){}
+    Joint();
+    Joint( const Joint& copy, const osg::CopyOp& copyop=osg::CopyOp::SHALLOW_COPY );
+    META_Object(osgbDynamics,Joint)
 
-META_Object(osgbDynamics,RigidBodyAnimation)
-    virtual void operator()( osg::Node* node, osg::NodeVisitor* nv );
+    const btTypedConstraint* getConstraint()const;
+    btTypedConstraint* getConstraint();
+
+    void setConstraint( btTypedConstraint *b );
+    const osgbDynamics::RigidBody *getBodyA()const    {        return _rigA;    }
+     osgbDynamics::RigidBody *getBodyA()    {        return _rigA;    }
+    void setBodyA(RigidBody *c);
+    const RigidBody *getBodyB()const    {        return _rigB;    }
+     RigidBody *getBodyB()    {        return _rigB;    }
+    void setBodyB(RigidBody *c);
 
 protected:
-    virtual ~RigidBodyAnimation() { }
-};
+    ~Joint();
 
+    RigidBody* _rigA;
+    RigidBody* _rigB;
+
+};
 
 // osgbDynamics
 }
 
-// __OSGBDYAMICS_RIGID_BODY_ANIMATION_H__
+
 #endif

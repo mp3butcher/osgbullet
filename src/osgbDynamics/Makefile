@@ -228,6 +228,30 @@ GroundPlane.cpp.s:
 	cd /home/pascal/SRC/osgbullet && $(MAKE) -f src/osgbDynamics/CMakeFiles/osgbDynamics.dir/build.make src/osgbDynamics/CMakeFiles/osgbDynamics.dir/GroundPlane.cpp.s
 .PHONY : GroundPlane.cpp.s
 
+Joint.o: Joint.cpp.o
+.PHONY : Joint.o
+
+# target to build an object file
+Joint.cpp.o:
+	cd /home/pascal/SRC/osgbullet && $(MAKE) -f src/osgbDynamics/CMakeFiles/osgbDynamics.dir/build.make src/osgbDynamics/CMakeFiles/osgbDynamics.dir/Joint.cpp.o
+.PHONY : Joint.cpp.o
+
+Joint.i: Joint.cpp.i
+.PHONY : Joint.i
+
+# target to preprocess a source file
+Joint.cpp.i:
+	cd /home/pascal/SRC/osgbullet && $(MAKE) -f src/osgbDynamics/CMakeFiles/osgbDynamics.dir/build.make src/osgbDynamics/CMakeFiles/osgbDynamics.dir/Joint.cpp.i
+.PHONY : Joint.cpp.i
+
+Joint.s: Joint.cpp.s
+.PHONY : Joint.s
+
+# target to generate assembly for a file
+Joint.cpp.s:
+	cd /home/pascal/SRC/osgbullet && $(MAKE) -f src/osgbDynamics/CMakeFiles/osgbDynamics.dir/build.make src/osgbDynamics/CMakeFiles/osgbDynamics.dir/Joint.cpp.s
+.PHONY : Joint.cpp.s
+
 MotionState.o: MotionState.cpp.o
 .PHONY : MotionState.o
 
@@ -324,6 +348,30 @@ RigidBodyAnimation.cpp.s:
 	cd /home/pascal/SRC/osgbullet && $(MAKE) -f src/osgbDynamics/CMakeFiles/osgbDynamics.dir/build.make src/osgbDynamics/CMakeFiles/osgbDynamics.dir/RigidBodyAnimation.cpp.s
 .PHONY : RigidBodyAnimation.cpp.s
 
+SoftBody.o: SoftBody.cpp.o
+.PHONY : SoftBody.o
+
+# target to build an object file
+SoftBody.cpp.o:
+	cd /home/pascal/SRC/osgbullet && $(MAKE) -f src/osgbDynamics/CMakeFiles/osgbDynamics.dir/build.make src/osgbDynamics/CMakeFiles/osgbDynamics.dir/SoftBody.cpp.o
+.PHONY : SoftBody.cpp.o
+
+SoftBody.i: SoftBody.cpp.i
+.PHONY : SoftBody.i
+
+# target to preprocess a source file
+SoftBody.cpp.i:
+	cd /home/pascal/SRC/osgbullet && $(MAKE) -f src/osgbDynamics/CMakeFiles/osgbDynamics.dir/build.make src/osgbDynamics/CMakeFiles/osgbDynamics.dir/SoftBody.cpp.i
+.PHONY : SoftBody.cpp.i
+
+SoftBody.s: SoftBody.cpp.s
+.PHONY : SoftBody.s
+
+# target to generate assembly for a file
+SoftBody.cpp.s:
+	cd /home/pascal/SRC/osgbullet && $(MAKE) -f src/osgbDynamics/CMakeFiles/osgbDynamics.dir/build.make src/osgbDynamics/CMakeFiles/osgbDynamics.dir/SoftBody.cpp.s
+.PHONY : SoftBody.cpp.s
+
 TripleBuffer.o: TripleBuffer.cpp.o
 .PHONY : TripleBuffer.o
 
@@ -394,6 +442,9 @@ help:
 	@echo "... GroundPlane.o"
 	@echo "... GroundPlane.i"
 	@echo "... GroundPlane.s"
+	@echo "... Joint.o"
+	@echo "... Joint.i"
+	@echo "... Joint.s"
 	@echo "... MotionState.o"
 	@echo "... MotionState.i"
 	@echo "... MotionState.s"
@@ -406,6 +457,9 @@ help:
 	@echo "... RigidBodyAnimation.o"
 	@echo "... RigidBodyAnimation.i"
 	@echo "... RigidBodyAnimation.s"
+	@echo "... SoftBody.o"
+	@echo "... SoftBody.i"
+	@echo "... SoftBody.s"
 	@echo "... TripleBuffer.o"
 	@echo "... TripleBuffer.i"
 	@echo "... TripleBuffer.s"

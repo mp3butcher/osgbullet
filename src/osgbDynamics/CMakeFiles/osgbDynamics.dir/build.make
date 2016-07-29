@@ -190,9 +190,55 @@ src/osgbDynamics/CMakeFiles/osgbDynamics.dir/RigidBody.cpp.o.provides: src/osgbD
 
 src/osgbDynamics/CMakeFiles/osgbDynamics.dir/RigidBody.cpp.o.provides.build: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/RigidBody.cpp.o
 
+src/osgbDynamics/CMakeFiles/osgbDynamics.dir/SoftBody.cpp.o: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/flags.make
+src/osgbDynamics/CMakeFiles/osgbDynamics.dir/SoftBody.cpp.o: src/osgbDynamics/SoftBody.cpp
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/pascal/SRC/osgbullet/CMakeFiles $(CMAKE_PROGRESS_7)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object src/osgbDynamics/CMakeFiles/osgbDynamics.dir/SoftBody.cpp.o"
+	cd /home/pascal/SRC/osgbullet/src/osgbDynamics && /usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/osgbDynamics.dir/SoftBody.cpp.o -c /home/pascal/SRC/osgbullet/src/osgbDynamics/SoftBody.cpp
+
+src/osgbDynamics/CMakeFiles/osgbDynamics.dir/SoftBody.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/osgbDynamics.dir/SoftBody.cpp.i"
+	cd /home/pascal/SRC/osgbullet/src/osgbDynamics && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/pascal/SRC/osgbullet/src/osgbDynamics/SoftBody.cpp > CMakeFiles/osgbDynamics.dir/SoftBody.cpp.i
+
+src/osgbDynamics/CMakeFiles/osgbDynamics.dir/SoftBody.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/osgbDynamics.dir/SoftBody.cpp.s"
+	cd /home/pascal/SRC/osgbullet/src/osgbDynamics && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/pascal/SRC/osgbullet/src/osgbDynamics/SoftBody.cpp -o CMakeFiles/osgbDynamics.dir/SoftBody.cpp.s
+
+src/osgbDynamics/CMakeFiles/osgbDynamics.dir/SoftBody.cpp.o.requires:
+.PHONY : src/osgbDynamics/CMakeFiles/osgbDynamics.dir/SoftBody.cpp.o.requires
+
+src/osgbDynamics/CMakeFiles/osgbDynamics.dir/SoftBody.cpp.o.provides: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/SoftBody.cpp.o.requires
+	$(MAKE) -f src/osgbDynamics/CMakeFiles/osgbDynamics.dir/build.make src/osgbDynamics/CMakeFiles/osgbDynamics.dir/SoftBody.cpp.o.provides.build
+.PHONY : src/osgbDynamics/CMakeFiles/osgbDynamics.dir/SoftBody.cpp.o.provides
+
+src/osgbDynamics/CMakeFiles/osgbDynamics.dir/SoftBody.cpp.o.provides.build: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/SoftBody.cpp.o
+
+src/osgbDynamics/CMakeFiles/osgbDynamics.dir/Joint.cpp.o: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/flags.make
+src/osgbDynamics/CMakeFiles/osgbDynamics.dir/Joint.cpp.o: src/osgbDynamics/Joint.cpp
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/pascal/SRC/osgbullet/CMakeFiles $(CMAKE_PROGRESS_8)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object src/osgbDynamics/CMakeFiles/osgbDynamics.dir/Joint.cpp.o"
+	cd /home/pascal/SRC/osgbullet/src/osgbDynamics && /usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/osgbDynamics.dir/Joint.cpp.o -c /home/pascal/SRC/osgbullet/src/osgbDynamics/Joint.cpp
+
+src/osgbDynamics/CMakeFiles/osgbDynamics.dir/Joint.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/osgbDynamics.dir/Joint.cpp.i"
+	cd /home/pascal/SRC/osgbullet/src/osgbDynamics && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/pascal/SRC/osgbullet/src/osgbDynamics/Joint.cpp > CMakeFiles/osgbDynamics.dir/Joint.cpp.i
+
+src/osgbDynamics/CMakeFiles/osgbDynamics.dir/Joint.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/osgbDynamics.dir/Joint.cpp.s"
+	cd /home/pascal/SRC/osgbullet/src/osgbDynamics && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/pascal/SRC/osgbullet/src/osgbDynamics/Joint.cpp -o CMakeFiles/osgbDynamics.dir/Joint.cpp.s
+
+src/osgbDynamics/CMakeFiles/osgbDynamics.dir/Joint.cpp.o.requires:
+.PHONY : src/osgbDynamics/CMakeFiles/osgbDynamics.dir/Joint.cpp.o.requires
+
+src/osgbDynamics/CMakeFiles/osgbDynamics.dir/Joint.cpp.o.provides: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/Joint.cpp.o.requires
+	$(MAKE) -f src/osgbDynamics/CMakeFiles/osgbDynamics.dir/build.make src/osgbDynamics/CMakeFiles/osgbDynamics.dir/Joint.cpp.o.provides.build
+.PHONY : src/osgbDynamics/CMakeFiles/osgbDynamics.dir/Joint.cpp.o.provides
+
+src/osgbDynamics/CMakeFiles/osgbDynamics.dir/Joint.cpp.o.provides.build: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/Joint.cpp.o
+
 src/osgbDynamics/CMakeFiles/osgbDynamics.dir/RigidBodyAnimation.cpp.o: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/flags.make
 src/osgbDynamics/CMakeFiles/osgbDynamics.dir/RigidBodyAnimation.cpp.o: src/osgbDynamics/RigidBodyAnimation.cpp
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/pascal/SRC/osgbullet/CMakeFiles $(CMAKE_PROGRESS_7)
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/pascal/SRC/osgbullet/CMakeFiles $(CMAKE_PROGRESS_9)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object src/osgbDynamics/CMakeFiles/osgbDynamics.dir/RigidBodyAnimation.cpp.o"
 	cd /home/pascal/SRC/osgbullet/src/osgbDynamics && /usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/osgbDynamics.dir/RigidBodyAnimation.cpp.o -c /home/pascal/SRC/osgbullet/src/osgbDynamics/RigidBodyAnimation.cpp
 
@@ -215,7 +261,7 @@ src/osgbDynamics/CMakeFiles/osgbDynamics.dir/RigidBodyAnimation.cpp.o.provides.b
 
 src/osgbDynamics/CMakeFiles/osgbDynamics.dir/TripleBuffer.cpp.o: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/flags.make
 src/osgbDynamics/CMakeFiles/osgbDynamics.dir/TripleBuffer.cpp.o: src/osgbDynamics/TripleBuffer.cpp
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/pascal/SRC/osgbullet/CMakeFiles $(CMAKE_PROGRESS_8)
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/pascal/SRC/osgbullet/CMakeFiles $(CMAKE_PROGRESS_10)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object src/osgbDynamics/CMakeFiles/osgbDynamics.dir/TripleBuffer.cpp.o"
 	cd /home/pascal/SRC/osgbullet/src/osgbDynamics && /usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/osgbDynamics.dir/TripleBuffer.cpp.o -c /home/pascal/SRC/osgbullet/src/osgbDynamics/TripleBuffer.cpp
 
@@ -238,7 +284,7 @@ src/osgbDynamics/CMakeFiles/osgbDynamics.dir/TripleBuffer.cpp.o.provides.build: 
 
 src/osgbDynamics/CMakeFiles/osgbDynamics.dir/World.cpp.o: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/flags.make
 src/osgbDynamics/CMakeFiles/osgbDynamics.dir/World.cpp.o: src/osgbDynamics/World.cpp
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/pascal/SRC/osgbullet/CMakeFiles $(CMAKE_PROGRESS_9)
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/pascal/SRC/osgbullet/CMakeFiles $(CMAKE_PROGRESS_11)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object src/osgbDynamics/CMakeFiles/osgbDynamics.dir/World.cpp.o"
 	cd /home/pascal/SRC/osgbullet/src/osgbDynamics && /usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/osgbDynamics.dir/World.cpp.o -c /home/pascal/SRC/osgbullet/src/osgbDynamics/World.cpp
 
@@ -267,6 +313,8 @@ osgbDynamics_OBJECTS = \
 "CMakeFiles/osgbDynamics.dir/MotionState.cpp.o" \
 "CMakeFiles/osgbDynamics.dir/PhysicsThread.cpp.o" \
 "CMakeFiles/osgbDynamics.dir/RigidBody.cpp.o" \
+"CMakeFiles/osgbDynamics.dir/SoftBody.cpp.o" \
+"CMakeFiles/osgbDynamics.dir/Joint.cpp.o" \
 "CMakeFiles/osgbDynamics.dir/RigidBodyAnimation.cpp.o" \
 "CMakeFiles/osgbDynamics.dir/TripleBuffer.cpp.o" \
 "CMakeFiles/osgbDynamics.dir/World.cpp.o"
@@ -280,6 +328,8 @@ lib/libosgbDynamicsd.so.3.00.00: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/Gr
 lib/libosgbDynamicsd.so.3.00.00: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/MotionState.cpp.o
 lib/libosgbDynamicsd.so.3.00.00: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/PhysicsThread.cpp.o
 lib/libosgbDynamicsd.so.3.00.00: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/RigidBody.cpp.o
+lib/libosgbDynamicsd.so.3.00.00: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/SoftBody.cpp.o
+lib/libosgbDynamicsd.so.3.00.00: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/Joint.cpp.o
 lib/libosgbDynamicsd.so.3.00.00: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/RigidBodyAnimation.cpp.o
 lib/libosgbDynamicsd.so.3.00.00: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/TripleBuffer.cpp.o
 lib/libosgbDynamicsd.so.3.00.00: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/World.cpp.o
@@ -324,6 +374,8 @@ src/osgbDynamics/CMakeFiles/osgbDynamics.dir/requires: src/osgbDynamics/CMakeFil
 src/osgbDynamics/CMakeFiles/osgbDynamics.dir/requires: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/MotionState.cpp.o.requires
 src/osgbDynamics/CMakeFiles/osgbDynamics.dir/requires: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/PhysicsThread.cpp.o.requires
 src/osgbDynamics/CMakeFiles/osgbDynamics.dir/requires: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/RigidBody.cpp.o.requires
+src/osgbDynamics/CMakeFiles/osgbDynamics.dir/requires: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/SoftBody.cpp.o.requires
+src/osgbDynamics/CMakeFiles/osgbDynamics.dir/requires: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/Joint.cpp.o.requires
 src/osgbDynamics/CMakeFiles/osgbDynamics.dir/requires: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/RigidBodyAnimation.cpp.o.requires
 src/osgbDynamics/CMakeFiles/osgbDynamics.dir/requires: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/TripleBuffer.cpp.o.requires
 src/osgbDynamics/CMakeFiles/osgbDynamics.dir/requires: src/osgbDynamics/CMakeFiles/osgbDynamics.dir/World.cpp.o.requires

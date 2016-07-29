@@ -204,7 +204,7 @@ public:
     Called by TripleBufferMotionStateUpdate() and not inteded for application use. */
     void updateTripleBuffer( const char* addr );
 
-private:
+protected:
     void setWorldTransformInternal( const btTransform& worldTrans );
 
     // One or the other of these will be valid, depending on whether the
