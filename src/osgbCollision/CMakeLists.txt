@@ -56,8 +56,7 @@ if( BUILD_SHARED_LIBS )
         )
     else()
         set( _localBulletLibs
-            ${BULLET_COLLISION_LIBRARY}
-            ${BULLET_MATH_LIBRARY}
+            ${BULLET_LIBRARIES}
         )
     endif()
 

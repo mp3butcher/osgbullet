@@ -1,5 +1,5 @@
 SET( CATEGORY Example )
-
+#link_libraries(       ${OPENSCENEGRAPH_LIBRARIES} ${OSGANIMATION_LIBRARY} )
 ADD_SUBDIRECTORY( basicdemo )
 ADD_SUBDIRECTORY( centerofmass )
 ADD_SUBDIRECTORY( collision )
@@ -10,6 +10,7 @@ ADD_SUBDIRECTORY( multithreaded )
 ADD_SUBDIRECTORY( patch-lowlevel )
 ADD_SUBDIRECTORY( slider )
 ADD_SUBDIRECTORY( saverestore )
+ADD_SUBDIRECTORY( experimentConvexDecomposition)
 
 # Requires multithreaded, but that's not always available
 IF( BULLET_BulletMultiThreaded_LIBRARY OR BULLET_BulletMultiThreaded_LIBRARY_debug )

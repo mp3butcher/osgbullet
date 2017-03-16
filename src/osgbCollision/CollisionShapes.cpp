@@ -49,6 +49,7 @@
 #include <osgUtil/TransformAttributeFunctor>
 #include <osg/Notify>
 #include <string>
+#include <algorithm>
 namespace osgbCollision
 {
 

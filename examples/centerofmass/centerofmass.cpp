@@ -136,7 +136,7 @@ int main( int argc, char** argv )
    /* srh->capture();
     viewer.addEventHandler( srh.get() );*/
     viewer.addEventHandler( new osgbInteraction::DragHandler(
-        bw, viewer.getCamera() ) );
+       /* bw, viewer.getCamera()*/ ) );
 
 
     double prevSimTime = 0.;

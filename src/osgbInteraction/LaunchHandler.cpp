@@ -41,11 +41,22 @@ LaunchHandler::LaunchHandler():_world( 0 ), _attachPoint( 0 ),
     //_camera( camera ),
     _launchCollisionShape( NULL ),
     _initialVelocity( 10. ),
+    _launchedMass( 10. ),
     _group( 0 ),
     _mask( 0 ),
     _pt( NULL ),
     _tb( NULL ),
-    _msl( NULL ){}
+    _msl( NULL ){
+
+    // Make the default launch model: Sphere with radius 1.0.
+    osg::Geode* geode = new osg::Geode;
+    const double radius( 1.0 );
+
+    geode->addDrawable( new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(),radius)));//osgwTools::makeGeodesicSphere( radius ) );
+    _launchModel = geode;
+    _launchCollisionShape = new btSphereShape( radius );
+    _ownsCollisionShape = true;
+    }
 
 LaunchHandler::LaunchHandler(  const  LaunchHandler&copy,osg::CopyOp op ){}
 LaunchHandler::LaunchHandler( osgbDynamics::World* dw, osg::Group* attachPoint )
@@ -54,6 +65,7 @@ LaunchHandler::LaunchHandler( osgbDynamics::World* dw, osg::Group* attachPoint )
     //_camera( camera ),
     _launchCollisionShape( NULL ),
     _initialVelocity( 10. ),
+    _launchedMass( 10. ),
     _group( 0 ),
     _mask( 0 ),
     _pt( NULL ),
@@ -107,8 +119,22 @@ void LaunchHandler::setLaunchModel( osg::Node* model, btCollisionShape* shape )
 
 bool LaunchHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter&aa )
 {
+    osg::Camera * cam=aa.asView()->getCamera();
+    if(!_world){
+    ///Find world forward
+        osgbDynamics::WorldFinderVisitor worldFinder;
+        worldFinder.setTraversalMode(osg::NodeVisitor::TRAVERSE_ALL_CHILDREN);
+       // osgUtil::View* v=dynamic_cast<osgUtil::View*>(aa.asView());
+        //if(!v)return false;
+        cam->accept(worldFinder);
+        _world=worldFinder.getFoundWorld();
+        if(!_world)
+            return false;
+    }
+    if(!_world->getDynamicsWorld())
+        return false;
     // We want a shift-leftmouse event. Return false if we don't have it.
-    if( ( ea.getEventType() != osgGA::GUIEventAdapter::PUSH ) ||
+    if(!_attachPoint.valid() || ( ea.getEventType() != osgGA::GUIEventAdapter::PUSH ) ||
         ( ea.getButton() != osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON ) ||
         ( ( ea.getModKeyMask() & osgGA::GUIEventAdapter::MODKEY_SHIFT ) == 0 ) )
         return( false );
@@ -141,7 +167,7 @@ bool LaunchHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAd
 
     osg::ref_ptr< osgbDynamics::CreationRecord > cr = new osgbDynamics::CreationRecord;
     cr->_sceneGraph = amt.get();
-    cr->_mass = 1.;
+    cr->_mass = getLaunchedMass();
     cr->_parentTransform = parentTrans;
     btRigidBody* rb = osgbDynamics::createRigidBody( cr.get(), _launchCollisionShape );
     rb->setLinearVelocity( osgbCollision::asBtVector3( launchDir * _initialVelocity ) );

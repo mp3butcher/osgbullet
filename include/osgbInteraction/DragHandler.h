@@ -25,6 +25,7 @@
 #include <osgbInteraction/Export.h>
 #include <osgGA/GUIEventHandler>
 #include <osgbDynamics/MotionState.h>
+#include <osgbDynamics/World.h>
 #include <btBulletDynamicsCommon.h>
 #include <osg/Vec4>
 
@@ -71,7 +72,7 @@ public:
     \param scene Scene graph used for picking. \c scene must be a Camera node
     to allow DragHandler to properly convert from window to world coordinates
     during selection and dragging. */
-    DragHandler( btDynamicsWorld* dw, osg::Camera* scene );
+    DragHandler(/* btDynamicsWorld* dw, osg::Camera* scene */);
 
     /** \brief Handle events.
 
@@ -86,6 +87,9 @@ public:
     and unpauses the thread during constraint creation, modification, and deletion. */
     void setThreadedPhysicsSupport( osgbDynamics::PhysicsThread* pt );
 
+
+    void setWorld(osgbDynamics::World * w){_dw=w;}
+    osgbDynamics::World * getWorld()const{return _dw;}
 protected:
     ~DragHandler();
 
@@ -93,10 +97,10 @@ protected:
     \param wx Normalized (-1.0 to 1.0) x mouse position
     \param wy Normalized (-1.0 to 1.0) Y mouse position
     */
-    bool pick( float wx, float wy );
+    bool pick( osg::Camera*,float wx, float wy );
 
-    btDynamicsWorld* _dw;
-    osg::ref_ptr< osg::Camera > _scene;
+    osgbDynamics::World * _dw;
+    //osg::ref_ptr< osg::Camera > _scene;
 
     btPoint2PointConstraint* _constraint;
     osgbDynamics::MotionState* _constrainedMotionState;

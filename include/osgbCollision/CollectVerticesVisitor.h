@@ -23,7 +23,7 @@
 
 #include <osgbCollision/Export.h>
 #include <osg/NodeVisitor>
-#include <osg/Array>
+#include <osg/Geometry>
 //#include <osgwTools/Version.h>
 
 
@@ -53,6 +53,7 @@ public:
 
     void apply( osg::Geode& geode );
 
+    virtual void apply(osg::Geometry& geometry){applyDrawable(geometry.asDrawable());traverse(geometry);}
     /** \brief Builds CollectVerticesVisitor::_localNodePath (a NodePath) from all Transforms,
     excluding AbsoluteModelTransform.
 

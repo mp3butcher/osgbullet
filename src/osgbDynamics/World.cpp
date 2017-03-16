@@ -23,7 +23,8 @@
 #include <btBulletDynamicsCommon.h>
 #include <BulletSoftBody/btSoftRigidDynamicsWorld.h>
 #include <BulletSoftBody/btSoftBodyRigidBodyCollisionConfiguration.h>
-
+#define max(a,b)    (((a) > (b)) ? (a) : (b))
+#define min(a,b)    (((a) < (b)) ? (a) : (b))
 #ifndef USE_REFERENCE_TIME
 #   define USE_REFERENCE_TIME DBL_MAX
 #endif
@@ -44,7 +45,7 @@ World::~World()
 World::World( const World& copy, const osg::CopyOp& copyop )
     :   osg::Group(copy, copyop)
 {
-
+	_debugdraw = false;
 }
 void World::setWorldType(WorldType t)
 {
@@ -59,8 +60,8 @@ void World::setWorldType(WorldType t)
         btCollisionDispatcher * dispatcher = 0;
         btConstraintSolver * solver = new btSequentialImpulseConstraintSolver;
 
-        btVector3 worldAabbMin( -10000, -10000, -10000 );
-        btVector3 worldAabbMax( 10000, 10000, 10000 );
+        btVector3 worldAabbMin( -1000, -1000, -1000 );
+        btVector3 worldAabbMax( 1000, 1000, 1000 );
         btBroadphaseInterface * inter = new btAxisSweep3( worldAabbMin, worldAabbMax, 1000 );
 
         // btDynamicsWorld * dynamicsWorld = new btDiscreteDynamicsWorld( dispatcher, inter, solver, collisionConfiguration );
@@ -108,6 +109,7 @@ void World::setWorldType(WorldType t)
         }
 
         _btworld->setGravity( btVector3( 0, 0, -10 ) );
+         //      _btworld->stepSimulation( 0.1);
     }
 
 }
@@ -133,10 +135,10 @@ public:
     DebugDrawable(osgbCollision::GLDebugDrawer *d,btDiscreteDynamicsWorld*w ):dbgDraw(d),dynamicsWorld(w) {}
     virtual void drawImplementation(osg::RenderInfo& /*renderInfo*/) const
     {
-        dbgDraw->BeginDraw();
+     //   dbgDraw->BeginDraw();
 
         dynamicsWorld->debugDrawWorld();
-        dbgDraw->EndDraw();
+      //  dbgDraw->EndDraw();
 
     }
     /* virtual void traverse(osg::NodeVisitor&nv){
@@ -162,7 +164,7 @@ void World::addJoint(Joint*j)
             _btworld->addConstraint(j->getConstraint());
 
 
-            OSG_WARN<<"joint constraint added"<<std::endl;
+           // OSG_WARN<<"joint constraint added"<<std::endl;
         }
         else
         {
@@ -199,13 +201,17 @@ void World::setDebugEnabled(bool b)
 {
     if (_debugdraw==b)return;
     _debugdraw=b;
+		/*osgbCollision::GLDebugDrawer *dbgDraw = (osgbCollision::GLDebugDrawer*)_debugdrawable->getChild(0);
+		dbgDraw->getSceneGraph();
+		dbgDraw->setEnabled(b);*/
     if(_debugdraw)
-    {
-        dbgDraw = new osgbCollision::GLDebugDrawer();
-        dbgDraw->setDebugMode( ~btIDebugDraw::DBG_DrawText );
+    { 
+		 dbgDraw = new osgbCollision::GLDebugDrawer();
+		dbgDraw->setDebugMode(~btIDebugDraw::DBG_DrawText);
+		dbgDraw->setEnabled(b);
         _btworld->setDebugDrawer( dbgDraw );
-        _debugdrawable=new osg::Geode();
-        _debugdrawable->addDrawable(new DebugDrawable (dbgDraw,_btworld));
+        _debugdrawable=new osg::Group();
+		 //_debugdrawable->addChild(dbgDraw->getSceneGraph());
 
 
     }
@@ -213,7 +219,9 @@ void World::setDebugEnabled(bool b)
     {
 
         if(_btworld->getDebugDrawer())
-        {
+		{	//osgbCollision::GLDebugDrawer *dbgDraw = (osgbCollision::GLDebugDrawer*)_debugdrawable->getChild(0);
+		 
+	//	dbgDraw->setEnabled(b);
             delete _btworld->getDebugDrawer();
             _btworld->setDebugDrawer( 0);
 
@@ -223,13 +231,7 @@ void World::setDebugEnabled(bool b)
 }
 void World::traverse(osg::NodeVisitor &nv)
 {
-#define DEBUGSTUFF  if(_debugdraw)\
-        {\
-        dbgDraw->getSceneGraph()->traverse(nv);\
-        _debugdrawable->traverse(nv);\
-            osg::Group::traverse(nv);\
-        }\
-        else    osg::Group::traverse(nv);
+
 
     ///
     switch(nv.getVisitorType())
@@ -243,22 +245,46 @@ void World::traverse(osg::NodeVisitor &nv)
             addJoint(_joints2add.back());
             _joints2add.pop_back();
         }
+		
+		if (_debugdraw){
 
-
+		}
         const osg::FrameStamp* fs = nv.getFrameStamp();
-        if ( _deltaTime==USE_REFERENCE_TIME )
-            _btworld->stepSimulation( fs->getReferenceTime() - _prevousReferenceTime);
-        else
-            _btworld->stepSimulation( _deltaTime );
+		if (_deltaTime >10)
+
+			_btworld->stepSimulation( min ( max(fs->getReferenceTime() - _prevousReferenceTime, 0.0001), 10));
+		else{
+			_btworld->stepSimulation(_deltaTime);
+		 
+		}
         _prevousReferenceTime = fs->getReferenceTime();
+
+		if (_debugdraw){
+			
+		}
         osg::Group::traverse(nv);
+		if (_debugdraw){
+			dbgDraw->BeginDraw();
+	    	_btworld->debugDrawWorld(); dbgDraw->EndDraw();dbgDraw->getSceneGraph()->accept(nv);
+		}
     }
     break;
     case osg::NodeVisitor::CULL_VISITOR:
-        DEBUGSTUFF
+		osg::Group::traverse(nv);
+		if (_debugdraw)
+		{
+		dbgDraw->getSceneGraph()->accept(nv); 
+		 
+		}
+		
         break;
-    default:
+	default:	
         osg::Group::traverse(nv);
+		if (_debugdraw)
+	{
+		dbgDraw->getSceneGraph()->accept(nv);
+
+	}
     }
 
 }

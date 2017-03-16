@@ -579,8 +579,9 @@ int main( int argc, char** argv )
     viewer.getCamera()->setClearColor( osg::Vec4( .5, .5, .5, 1. ) );
 
     // Create the launch handler.
-    osgbInteraction::LaunchHandler* lh = new osgbInteraction::LaunchHandler(
-        bulletWorld, launchHandlerAttachPoint );
+ osgbInteraction::LaunchHandler* lh = new osgbInteraction::LaunchHandler();
+     //lh->setWorld(root);
+        lh->setAttachPoint( launchHandlerAttachPoint );
     {
         // Use a custom launch model: A scaled-down teapot.
         osg::ref_ptr< osg::MatrixTransform > mt = new osg::MatrixTransform(
@@ -603,7 +604,7 @@ int main( int argc, char** argv )
     srh->capture();
     viewer.addEventHandler( srh.get() );*/
     viewer.addEventHandler( new osgbInteraction::DragHandler(
-        bulletWorld, viewer.getCamera() ) );
+        /*bulletWorld, viewer.getCamera() */) );
 
     viewer.realize();
     double prevSimTime = 0.;

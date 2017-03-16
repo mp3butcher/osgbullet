@@ -42,353 +42,207 @@
 
 #include <osgDB/WriteFile>
 #include <osgDB/ReadFile>
-osg::AnimationPath * createAnimationPath( const osg::Vec3 & center,
-                                          float radius,
-                                          double looptime )
+/* -*-c++-*- OpenSceneGraph - Copyright (C) 1998-2010 Robert Osfield
+ *
+ * This application is open source and may be redistributed and/or modified
+ * freely and without restriction, both in commercial and non commercial applications,
+ * as long as this copyright notice is maintained.
+ *
+ * This application is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+*/
+
+#include <osgDB/ReadFile>
+#include <osgUtil/Optimizer>
+#include <osg/CoordinateSystemNode>
+
+#include <osg/Switch>
+#include <osg/Types>
+#include <osgText/Text>
+
+#include <osgViewer/Viewer>
+#include <osgViewer/ViewerEventHandlers>
+
+#include <osgGA/TrackballManipulator>
+#include <osgGA/FlightManipulator>
+#include <osgGA/DriveManipulator>
+#include <osgGA/KeySwitchMatrixManipulator>
+#include <osgGA/StateSetManipulator>
+#include <osgGA/AnimationPathManipulator>
+#include <osgGA/TerrainManipulator>
+#include <osgGA/SphericalManipulator>
+
+#include <osgGA/Device>
+
+#include <iostream>
+
+
+int main(int argc, char** argv)
 {
-    /* set up the animation path */
-    osg::AnimationPath * animationPath = new osg::AnimationPath;
+    // use an ArgumentParser object to manage the program arguments.
+    osg::ArgumentParser arguments(&argc,argv);
 
-    animationPath->setLoopMode( osg::AnimationPath::LOOP );
+    arguments.getApplicationUsage()->setApplicationName(arguments.getApplicationName());
+    arguments.getApplicationUsage()->setDescription(arguments.getApplicationName()+" is the standard OpenSceneGraph example which loads and visualises 3d models.");
+    arguments.getApplicationUsage()->setCommandLineUsage(arguments.getApplicationName()+" [options] filename ...");
+    arguments.getApplicationUsage()->addCommandLineOption("--image <filename>","Load an image and render it on a quad");
+    arguments.getApplicationUsage()->addCommandLineOption("--dem <filename>","Load an image/DEM and render it on a HeightField");
+    arguments.getApplicationUsage()->addCommandLineOption("--login <url> <username> <password>","Provide authentication information for http file access.");
+    arguments.getApplicationUsage()->addCommandLineOption("-p <filename>","Play specified camera path animation file, previously saved with 'z' key.");
+    arguments.getApplicationUsage()->addCommandLineOption("--speed <factor>","Speed factor for animation playing (1 == normal speed).");
+    arguments.getApplicationUsage()->addCommandLineOption("--device <device-name>","add named device to the viewer");
 
-    int numSamples = 40;
-    float yaw = 0.0f;
-    float yaw_delta = 2.0f * osg::PI / ( ( float )numSamples - 1.0f );
-    float roll = osg::inDegrees( 30.0f );
+    osgViewer::Viewer viewer(arguments);
 
-    double time = 0.0f;
-    double time_delta = looptime / ( double )numSamples;
-    for( int i = 0; i < numSamples; ++i )
+    unsigned int helpType = 0;
+    if ((helpType = arguments.readHelpType()))
     {
-        osg::Vec3 position( center + osg::Vec3( sinf( yaw ) * radius, cosf( yaw ) * radius, 0.0f ) );
-        osg::Quat rotation( osg::Quat( roll, osg::Vec3( 0.0, 1.0, 0.0 ) ) * osg::Quat( -( yaw + osg::inDegrees( 90.0f ) ), osg::Vec3( 0.0, 0.0, 1.0 ) ) );
-
-        animationPath->insert( time, osg::AnimationPath::ControlPoint( position, rotation ) );
-
-        yaw += yaw_delta;
-        time += time_delta;
+        arguments.getApplicationUsage()->write(std::cout, helpType);
+        return 1;
     }
-    return( animationPath );
-}
 
-osg::MatrixTransform * createOSGBox( osg::Vec3 size )
-{
-    osg::Box * box = new osg::Box();
-
-    box->setHalfLengths( size );
-
-    osg::ShapeDrawable * shape = new osg::ShapeDrawable( box );
-
-    osg::Geode * geode = new osg::Geode();
-    geode->addDrawable( shape );
-
-    osg::MatrixTransform * transform = new osg::MatrixTransform();
-    transform->addChild( geode );
-
-    return( transform );
-}
-
-btRigidBody * createBTBox( osg::MatrixTransform * box,
-                          osg::Vec3 center )
-{
-    btCollisionShape * collision = osgbCollision::btBoxCollisionShapeFromOSG( box );
-
-    osgbDynamics::MotionState * motion = new osgbDynamics::MotionState();
-    motion->setTransform( box );
-    motion->setParentTransform( osg::Matrix::translate( center ) );
-
-    btScalar mass( 0.0 );
-    btVector3 inertia( 0, 0, 0 );
-    btRigidBody::btRigidBodyConstructionInfo rb( mass, motion, collision, inertia );
-    btRigidBody * body = new btRigidBody( rb );
-//box->setRigidBody(body);
-    return( body );
-}
-
-btDiscreteDynamicsWorld * initPhysics()
-{
-    btDefaultCollisionConfiguration * collisionConfiguration = new btDefaultCollisionConfiguration();
-    btCollisionDispatcher * dispatcher = new btCollisionDispatcher( collisionConfiguration );
-    btConstraintSolver * solver = new btSequentialImpulseConstraintSolver;
-
-    btVector3 worldAabbMin( -10000, -10000, -10000 );
-    btVector3 worldAabbMax( 10000, 10000, 10000 );
-    btBroadphaseInterface * inter = new btAxisSweep3( worldAabbMin, worldAabbMax, 1000 );
-
-    btDiscreteDynamicsWorld * dynamicsWorld = new btDiscreteDynamicsWorld( dispatcher, inter, solver, collisionConfiguration );
-
-    dynamicsWorld->setGravity( btVector3( 0, 0, -10 ) );
-
-    return( dynamicsWorld );
-}
-
-float randomFloatInRange( std::pair< float, float > range =
-                            std::pair< float, float >( -10, 10 ) )
-{
-    return( range.first + (range.second-range.first)*rand()/static_cast< float >( RAND_MAX ) );
-}
-
-btVector3 randomBVec3InRange( std::pair< btVector3, btVector3 > range =
-                        std::pair< btVector3, btVector3 >(
-                            btVector3( -1, -1, -1),
-                            btVector3(  1,  1,  1) ) )
-{
-    return(
-        btVector3(
-            randomFloatInRange(
-                std::pair< float, float >( range.first[0], range.second[0] ) ),
-            randomFloatInRange(
-                std::pair< float, float >( range.first[1], range.second[1] ) ),
-            randomFloatInRange(
-                std::pair< float, float >( range.first[2], range.second[2] ) ) ) );
-}
-
-
-/* \cond */
-class GliderUpdateCallback : public osg::NodeCallback
-{
-public:
-    GliderUpdateCallback( btRigidBody * body )
-        : body_( body )
-        , basetime_( 0.0 )
-        {}
-    virtual void operator()( osg::Node* node, osg::NodeVisitor* nv )
+    // report any errors if they have occurred when parsing the program arguments.
+    if (arguments.errors())
     {
-        double now = nv->getFrameStamp()->getSimulationTime();
-        if ( ( now - basetime_ ) > 5.5 )
+        arguments.writeErrorMessages(std::cout);
+        return 1;
+    }
+
+    /*if (arguments.argc()<=1)
+    {
+        arguments.getApplicationUsage()->write(std::cout,osg::ApplicationUsage::COMMAND_LINE_OPTION);
+        return 1;
+    }
+*/
+    std::string url, username, password;
+    while(arguments.read("--login",url, username, password))
+    {
+        if (!osgDB::Registry::instance()->getAuthenticationMap())
         {
-            basetime_ = now;
-            btVector3 punch = randomBVec3InRange(
-                std::pair< btVector3, btVector3 >(
-                btVector3( -10, -10, -.5 ), btVector3(  10,  10, .5 ) ) );
-            osg::notify( osg::NOTICE ) << "punch!"
-                << punch[0] << " "
-                << punch[1] << " "
-                << punch[2] << std::endl;
-            body_->setLinearVelocity( punch );
-            body_->setAngularVelocity( randomBVec3InRange() );
+            osgDB::Registry::instance()->setAuthenticationMap(new osgDB::AuthenticationMap);
+            osgDB::Registry::instance()->getAuthenticationMap()->addAuthenticationDetails(
+                url,
+                new osgDB::AuthenticationDetails(username, password)
+            );
         }
-        traverse( node, nv );
-    }
-private:
-    btRigidBody *   body_;
-    double          basetime_;
-};
-/* \endcond */
-
-
-osg::MatrixTransform * createModel( btDynamicsWorld * dynamicsWorld )
-{
-/*
- * BEGIN: Create physics object code.
- *  OSG CODE
- */
-    //osg::ref_ptr< osg::MatrixTransform > node;
-    osg::ref_ptr<osg::MatrixTransform>node;
-	const std::string fileName( "glider.osg" );
-    osg::ref_ptr< osg::Node > nodeDB = osgDB::readNodeFile( fileName );
-	if( !nodeDB.valid() )
-	{
-		osg::notify( osg::FATAL ) << "Can't find \"" << fileName << "\". Make sure OSG_FILE_PATH includes the OSG sample data directory." << std::endl;
-		exit( 0 );
-	}
-
-    if( ( node = dynamic_cast< osg::MatrixTransform* >( nodeDB.get() ) ) == NULL )
-    {
-        node = new osg::MatrixTransform;//::MatrixTransform;
-        node->addChild( nodeDB.get() );
     }
 
-    /*  osgBullet code */
-    osgbDynamics::MotionState * motion = new osgbDynamics::MotionState;
-    motion->setTransform( node.get() );
-    //ConvexHullCollisionShape outperform  btCollisionShape * collision = osgbCollision::btConvexTriMeshCollisionShapeFromOSG( node.get() );
-       btCollisionShape * collision =  osgbCollision::btConvexHullCollisionShapeFromOSG( node.get() );
-    // Create an OSG representation of the Bullet shape and attach it.
-    // This is mainly for debugging.
-    osg::Node* debugNode = osgbCollision::osgNodeFromBtCollisionShape( collision );
-    node->addChild( debugNode );
-
-    // Set debug node state.
-    osg::StateSet* state = debugNode->getOrCreateStateSet();
-    osg::PolygonMode* pm = new osg::PolygonMode( osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE );
-    state->setAttributeAndModes( pm );
-    osg::PolygonOffset* po = new osg::PolygonOffset( -1, -1 );
-    state->setAttributeAndModes( po );
-    state->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
-
-    /*  BULLET CODE */
-    btTransform bodyTransform;
-    bodyTransform.setIdentity();
-    bodyTransform.setOrigin( btVector3( 0, 0, 5 ) );
-    motion->setWorldTransform( bodyTransform );
-
-    btScalar mass( 1.0 );
-    btVector3 inertia;
-    collision->calculateLocalInertia( mass, inertia );
-    btRigidBody::btRigidBodyConstructionInfo rbinfo( mass, motion, collision, inertia );
-    btRigidBody * body = new btRigidBody( rbinfo );
-    body->setLinearVelocity( btVector3( -5, -1, 0 ) );
-    body->setAngularVelocity( btVector3( 1, 0, 0 ) );
-
-     osgbDynamics:: RigidBody* gliderrig=new osgbDynamics::RigidBody();
-    gliderrig->setRigidBody( body);
-     node->addUpdateCallback(gliderrig);
-    //dynamicsWorld->addRigidBody( body );
-
-    // kick thing around from time to time.
-    node->addUpdateCallback( new GliderUpdateCallback( body ) );
-
-    return( node.release() );
-}
-
-int main( int argc,
-          char * argv[] )
-{
-    osg::ArgumentParser arguments( &argc, argv );
-    osgViewer::Viewer viewer;
-    viewer.setUpViewInWindow( 10, 30, 800, 600 );
-
-    osgGA::TrackballManipulator * tb = new osgGA::TrackballManipulator();
-
-    tb->setHomePosition( osg::Vec3( 5, -12, 12 ),
-                        osg::Vec3( -7, 0, -10 ),
-                        osg::Vec3( 0, 0, 1 ) );
-    viewer.setCameraManipulator( tb );
-
-    osg::ref_ptr<    osgbDynamics:: World  > root = new    osgbDynamics:: World ;
-     btDiscreteDynamicsWorld * dynamicsWorld = initPhysics();
-    root->setDynamicsWorld(dynamicsWorld);
-    viewer.setSceneData( root.get() );
-
-    osgDB::getDataFilePathList().push_back( "C:\\OpenSceneGraph\\Data" );
-
-osg::ref_ptr<osg::MatrixTransform > glider= createModel( dynamicsWorld );
-    root->addChild( glider);
-        const btVector3 btPivot( -0.498f, -0.019f, 0.146f );
-osgbDynamics::RigidBody * rigglider=dynamic_cast<osgbDynamics::RigidBody *>(glider->getUpdateCallback());
-        btVector3 btAxisA( 0., 0., 1. );
-        btHingeConstraint* hinge = new btHingeConstraint( *rigglider->getRigidBody(), btPivot, btAxisA );
-        hinge->setLimit( -1.5f, 1.5f );
-        //bulletWorld->addConstraint( hinge, true );
-        osgbDynamics::Joint *osghinge=new osgbDynamics::Joint();
-        osghinge->setConstraint(hinge);
-        osghinge->setBodyA(rigglider);
-
-
-root->addJoint(osghinge);
-
-    /* BEGIN: Create environment boxes */
-    osg::MatrixTransform* ground=0;
-    btRigidBody * groundBody=0;
-
-    float thin = .01;
-  // osgbDynamics:: World * osgbtworld=new osgbDynamics::World;
-   // root->addUpdateCallback(osgbtworld);
+    std::string device;
+    while(arguments.read("--device", device))
     {
-     osg::MatrixTransform* ground1 = createOSGBox( osg::Vec3( 10, 10, thin ) );
-     btRigidBody *  groundBody1 = createBTBox( ground1, osg::Vec3( 0, 0, -10 ) );
+        osg::ref_ptr<osgGA::Device> dev = osgDB::readRefFile<osgGA::Device>(device);
+        if (dev.valid())
+        {
+            viewer.addDevice(dev);
+        }
+    }
 
-    root->addChild( ground1 );
+    // set up the camera manipulators.
+    {
+        osg::ref_ptr<osgGA::KeySwitchMatrixManipulator> keyswitchManipulator = new osgGA::KeySwitchMatrixManipulator;
 
-   osgbDynamics:: RigidBody* groundBodyrig=new osgbDynamics::RigidBody();
-   groundBodyrig ->setRigidBody( groundBody1);
-    ground->addUpdateCallback(groundBodyrig);
-    //dynamicsWorld->addRigidBody( groundBody );
-}
-    ground = createOSGBox( osg::Vec3( 10, thin, 5 ) );
-    groundBody = createBTBox( ground, osg::Vec3( 0, 10, -5 ) );
-    root->addChild( ground );
-{
-  osgbDynamics:: RigidBody* groundBodyrig=new osgbDynamics::RigidBody();
-    groundBodyrig ->setRigidBody( groundBody);
-     ground->addUpdateCallback(groundBodyrig);
-    //dynamicsWorld->addRigidBody( groundBody );
-}
+        keyswitchManipulator->addMatrixManipulator( '1', "Trackball", new osgGA::TrackballManipulator() );
+        keyswitchManipulator->addMatrixManipulator( '2', "Flight", new osgGA::FlightManipulator() );
+        keyswitchManipulator->addMatrixManipulator( '3', "Drive", new osgGA::DriveManipulator() );
+        keyswitchManipulator->addMatrixManipulator( '4', "Terrain", new osgGA::TerrainManipulator() );
+        keyswitchManipulator->addMatrixManipulator( '5', "Orbit", new osgGA::OrbitManipulator() );
+        keyswitchManipulator->addMatrixManipulator( '6', "FirstPerson", new osgGA::FirstPersonManipulator() );
+        keyswitchManipulator->addMatrixManipulator( '7', "Spherical", new osgGA::SphericalManipulator() );
 
-    ground = createOSGBox( osg::Vec3( 10, thin, 5 ) );
-    groundBody = createBTBox( ground, osg::Vec3( 0, -10, -5 ) );
-    root->addChild( ground );
- {
-   osgbDynamics:: RigidBody* groundBodyrig=new osgbDynamics::RigidBody();
-    groundBodyrig->setRigidBody( groundBody);
-   ground->addUpdateCallback(groundBodyrig);
-    //dynamicsWorld->addRigidBody( groundBody );
-}
+        std::string pathfile;
+        double animationSpeed = 1.0;
+        while(arguments.read("--speed",animationSpeed) ) {}
+        char keyForAnimationPath = '8';
+        while (arguments.read("-p",pathfile))
+        {
+            osgGA::AnimationPathManipulator* apm = new osgGA::AnimationPathManipulator(pathfile);
+            if (apm || !apm->valid())
+            {
+                apm->setTimeScale(animationSpeed);
 
-    ground = createOSGBox( osg::Vec3( thin, 10, 5 ) );
-    groundBody = createBTBox( ground, osg::Vec3( 10, 0, -5 ) );
-      root->addChild( ground );
-{
-  osgbDynamics:: RigidBody* groundBodyrig=new osgbDynamics::RigidBody();
-    groundBodyrig->setRigidBody( groundBody);
-    ground->addUpdateCallback(groundBodyrig);
-    //dynamicsWorld->addRigidBody( groundBody );
-}
+                unsigned int num = keyswitchManipulator->getNumMatrixManipulators();
+                keyswitchManipulator->addMatrixManipulator( keyForAnimationPath, "Path", apm );
+                keyswitchManipulator->selectMatrixManipulator(num);
+                ++keyForAnimationPath;
+            }
+        }
 
-    ground = createOSGBox( osg::Vec3( thin, 10, 5 ) );
-    groundBody = createBTBox( ground, osg::Vec3( -10, 0, -5 ) );
-    root->addChild( ground );
-{
-  osgbDynamics:: RigidBody* groundBodyrig=new osgbDynamics::RigidBody();
-    groundBodyrig->setRigidBody( groundBody);
-   ground->addUpdateCallback(groundBodyrig);
-    //dynamicsWorld->addRigidBody( groundBody );
-}
-    /* END: Create environment boxes */
+        viewer.setCameraManipulator( keyswitchManipulator.get() );
+    }
 
-    /* BEGIN: Create animated box */
-    /* OSG Code */
-   osg::MatrixTransform * box = createOSGBox( osg::Vec3( .3, .3, .3 ) );
-    osg::AnimationPathCallback * apc = new osg::AnimationPathCallback( createAnimationPath( osg::Vec3( 0, 0, -9.25 ), 9.4, 6 ), 0, 1 );
+    // add the state manipulator
+    viewer.addEventHandler( new osgGA::StateSetManipulator(viewer.getCamera()->getOrCreateStateSet()) );
 
+    // add the thread model handler
+    viewer.addEventHandler(new osgViewer::ThreadingHandler);
 
-    /* Bullet Code */
-    btRigidBody * boxBody = createBTBox( box, osg::Vec3( -9, -3, -9 ) );
-     boxBody->setCollisionFlags( boxBody->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT );
-    boxBody->setActivationState( DISABLE_DEACTIVATION );
-    root->addChild( box );
-  {
-  osgbDynamics:: RigidBody* boxBodyrig=new osgbDynamics::RigidBody();
-    boxBodyrig->setRigidBody( boxBody);
-    osgbDynamics::RigidBodyAnimation * rba = new osgbDynamics::RigidBodyAnimation;
-  box->addUpdateCallback( apc );
-  box->addUpdateCallback( rba );
-   box->addUpdateCallback(boxBodyrig);
-    //dynamicsWorld->addRigidBody( boxBody );
-}
+    // add the window size toggle handler
+    viewer.addEventHandler(new osgViewer::WindowSizeHandler);
 
-    /* osgBullet Code
-    osgbCollision::RefBulletObject< btRigidBody >* boxRigid =
-        new osgbCollision::RefBulletObject< btRigidBody >( boxBody );
-    box->setUserData( boxRigid ); */
+    // add the stats handler
+    viewer.addEventHandler(new osgViewer::StatsHandler);
 
+    // add the help handler
+    viewer.addEventHandler(new osgViewer::HelpHandler(arguments.getApplicationUsage()));
+
+    // add the record camera path handler
+    viewer.addEventHandler(new osgViewer::RecordCameraPathHandler);
+
+    // add the LOD Scale handler
+    viewer.addEventHandler(new osgViewer::LODScaleHandler);
+
+    // add the screen capture handler
+    viewer.addEventHandler(new osgViewer::ScreenCaptureHandler);
+
+    // load the data
+    osg::ref_ptr<osg::Node> loadedModel = osgDB::readRefNodeFiles(arguments);
+  /*  if (!loadedModel)
+    {
+        std::cout << arguments.getApplicationName() <<": No data loaded" << std::endl;
+        return 1;
+    }*/
+
+    // any option left unread are converted into errors to write out later.
+    arguments.reportRemainingOptionsAsUnrecognized();
+
+    // report any errors if they have occurred when parsing the program arguments.
+    if (arguments.errors())
+    {
+        arguments.writeErrorMessages(std::cout);
+        return 1;
+    }
 
 
-      // box->addUpdateCallback(rba);
+    // optimize the scene graph, remove redundant nodes and state etc.
 
-    /* END: Create animated box */
 
-    // bonus geometry
-    //root->addChild( osgDB::readNodeFiles( arguments ) );
+osg::Group* root=(osg::Group*)osgDB::readNodeFile("/home/pascal/SRC/osgCastWizard2/bin/bullettest.osgb");
+
+osgbDynamics::World* w=(osgbDynamics::World*)root->getChild(0);
+//w->setDebugEnabled(true);
+    viewer.setSceneData( root );
+  osgUtil::Optimizer optimizer;
+    optimizer.optimize(root);
+
 
    /* osgDB::writeNodeFile(*root.get(),"fok.osgt");
-    root=(osgbDynamics::World*)osgDB::readNodeFile("fok.osgt");
-    viewer.setSceneData( root.get() );
+
 
 
     btRigidBody* hack=((osgbDynamics::RigidBody*)root->getChild(root->getNumChildren()-1))->getRigidBody();
    ///not serialized
     hack-> setCollisionFlags( boxBody->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT );
     hack->setActivationState( DISABLE_DEACTIVATION );
-*/
 
-root->setDebugEnabled(true);
+
   osg::Group* launchHandlerAttachPoint = new osg::Group;
-    root->addChild( launchHandlerAttachPoint );
+    w->addChild( launchHandlerAttachPoint );
 
-     osgbInteraction::LaunchHandler* lh = new osgbInteraction::LaunchHandler(
-        root->getDynamicsWorld(), launchHandlerAttachPoint );
+
+ osgbInteraction::LaunchHandler* lh = new osgbInteraction::LaunchHandler();
+     //lh->setWorld(root);
+     //   lh->setAttachPoint( root );
     {
         // Use a custom launch model: Sphere with radius 0.2 (instead of default 1.0).
         osg::Geode* geode = new osg::Geode;
@@ -397,10 +251,10 @@ root->setDebugEnabled(true);
         lh->setLaunchModel( geode, new btSphereShape( radius ) );
         lh->setInitialVelocity( 40. );
 
-        viewer.addEventHandler( lh );
-    }
-
-    viewer.realize(); viewer.run();
+        //viewer.addEventHandler( lh );
+    }*/
+    viewer.realize();
+     viewer.run();
   /*  while( !viewer.done() )
     {
         currSimTime = viewer.getFrameStamp()->getSimulationTime();

@@ -399,7 +399,7 @@ int main( int argc, char* argv[] )
     osgViewer::Viewer::Cameras cams;
     viewer.getCameras( cams );
     viewer.addEventHandler( new osgbInteraction::DragHandler(
-        dynamicsWorld, cams[ 0 ] ) );
+        /*dynamicsWorld, cams[ 0 ] */) );
 
     // Do this now, before getting the start time, so that it doesn't
     // negatively impact the first frame of the physics sim.

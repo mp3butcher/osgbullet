@@ -60,6 +60,8 @@ struct OSGBDYNAMICS_EXPORT CreationRecord : public osg::Object
 
     META_Object(osgbDynamics,CreationRecord);
 
+    void setSceneGraphNode(osg::Node* s ){_sceneGraph=s;}
+    osg::Node* getSceneGraphNode()const{return _sceneGraph;}
     osg::Node* _sceneGraph;
 
     /** The dot OSG representation of this class maintains a version number for
@@ -72,32 +74,65 @@ struct OSGBDYNAMICS_EXPORT CreationRecord : public osg::Object
     /** Specify the center of mass. If not set, osgbDynamics::createRigidBody
     will use the scene graph bounding volume center as the center of mass. */
     void setCenterOfMass( const osg::Vec3& com );
+    const osg::Vec3& getCenterOfMass()const{return _com;}
     osg::Vec3 _com;
+    void setIsCOMSet( bool com ){_comSet=com;}
+    bool getIsCOMSet()const{return _comSet;}
     bool _comSet;
+
+    void setMass( float com ){_mass=com;}
+    float getMass()const{return _mass;}
+    float _mass;
+
+
 
     /** Specify the collision shape margin for convex hull and convex tri mesh
     collision shapes.
-    
-    Note: Margin is currently used only if _overall is true. */
-    void setMargin( const float margin );
-    float _margin;
-    bool _marginSet;
 
+    Note: Margin is currently used only if _overall is true. */
+    void setMargin(  float margin );
+    float getMargin()const{return _margin;}
+    float _margin;
+
+
+
+    void setScale( const osg::Vec3& com ){_scale=com;};
+    const osg::Vec3& getScale()const{return _scale;}
     osg::Vec3 _scale;
+
+    void setParentTransform( const osg::Matrix& com ){_parentTransform=com;};
+    const osg::Matrix& getParentTransform()const{return _parentTransform;}
     osg::Matrix _parentTransform;
 
+
+    bool _marginSet;
     BroadphaseNativeTypes _shapeType;
-    float _mass;
+
+    void setRestitution(  float f ){_restitution=f;};
+    float getRestitution()const{return _restitution;}
     float _restitution;
+
+    void setFriction(  float f ){_friction=f;};
+    float getFriction()const{return _friction;}
     float _friction;
 
+
+    void setRollingFriction(  float f ){_rollingFriction=f;};
+    float getRollingFriction()const{return _rollingFriction;}
     float _rollingFriction;
+
+
+    void setLinearDamping(  float f ){_linearDamping=f;};
+    float getLinearDamping()const{return _linearDamping;}
     float _linearDamping;
+    void setAngularDamping(  float f ){_angularDamping=f;};
+    float getAngularDamping()const{return _angularDamping;}
     float _angularDamping;
 
     /** For _shapeType == CYLINDER_SHAPE_PROXYTYPE only. */
     osgbCollision::AXIS _axis;
 
+    bool _overall;
     /** Corresponds to the \c _reductionLevel parameter for
     osgbCollision::btCompoundShapeFromOSGGeodes(). */
     typedef enum {
@@ -108,9 +143,10 @@ struct OSGBDYNAMICS_EXPORT CreationRecord : public osg::Object
     } ReductionLevel;
     /** \brief Specify optional geometry reduction. Default is NONE.
     */
+    void setReductionLevel(ReductionLevel com ){_reductionLevel=com;};
+    ReductionLevel getReductionLevel()const{return _reductionLevel;}
     ReductionLevel _reductionLevel;
 
-    bool _overall;
 };
 
 

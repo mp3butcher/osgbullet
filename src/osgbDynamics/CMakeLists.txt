@@ -2,6 +2,7 @@ set( LIB_NAME osgbDynamics )
 set( HEADER_PATH ${PROJECT_SOURCE_DIR}/include/${LIB_NAME} )
 add_definitions( -DOSGBDYNAMICS_LIBRARY )
 
+INCLUDE_DIRECTORIES(${BULLET_INCLUDE_DIR}/../Extras/ConvexDecomposition)
 
 set( LIB_PUBLIC_HEADERS
     ${HEADER_PATH}/Export.h
@@ -42,14 +43,13 @@ add_library( ${LIB_NAME}
 if( BUILD_SHARED_LIBS )
     target_link_libraries( ${LIB_NAME}
         ${OSGWORKS_LIBRARIES}
-        ${OSG_LIBRARIES}
-        ${BULLET_LIBRARIES}
+        ${OSG_LIBRARIES}     ${OSGANIMATION_LIBRARY}
+        ${BULLET_LIBRARIES} ${BULLET_EXTRA_CONVEXDECOMPOSITION_LIBRARY}
     )
 
     # osgbDynamics depends on osgbCollision
-    target_link_libraries( ${LIB_NAME}
-        optimized "osgbCollision"
-        debug "osgbCollision"
+    target_link_libraries( ${LIB_NAME} osgbCollision
+           ${BULLET_LIBRARIES}
     )
 endif()
 

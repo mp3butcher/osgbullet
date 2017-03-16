@@ -54,6 +54,63 @@
 btSoftBodyWorldInfo	worldInfo;
 
 
+class MyCullCallback : public osg::Drawable::CullCallback
+{
+public:
+    virtual bool cull(osg::NodeVisitor* nv, osg::Drawable* node, osg::RenderInfo* renderInfo) const
+{
+// osgUtil::CullVisitor* cv = nv->asCullVisitor();
+osg::Drawable::CullCallback::cull(nv,node,renderInfo);
+osgUtil::CullVisitor* cv = dynamic_cast<osgUtil::CullVisitor*>(nv);
+if (!cv->isCulled(*node))
+{
+std::cout << "Node is visible: "<< std::endl;
+}
+
+if ( cv->isCulled(*node))
+{
+
+std::cout << "Node is NOT visible: "<<std::endl;
+
+}
+//traverse(node,nv);
+return true;
+}
+};
+osg::MatrixTransform * createOSGBox( osg::Vec3 size )
+{
+    osg::Box * box = new osg::Box();
+
+    box->setHalfLengths( size );
+
+    osg::ShapeDrawable * shape = new osg::ShapeDrawable( box );
+
+    osg::Geode * geode = new osg::Geode();
+    geode->addDrawable( shape );
+
+    shape->setCullCallback(new MyCullCallback());
+    osg::MatrixTransform * transform = new osg::MatrixTransform();
+    transform->addChild( geode );
+
+    return( transform );
+}
+
+btRigidBody * createBTBox( osg::MatrixTransform * box,
+                          osg::Vec3 center )
+{
+    btCollisionShape * collision = osgbCollision::btBoxCollisionShapeFromOSG( box );
+
+    osgbDynamics::MotionState * motion = new osgbDynamics::MotionState();
+    motion->setTransform( box );
+    motion->setParentTransform( osg::Matrix::translate( center ) );
+
+    btScalar mass( 0.0 );
+    btVector3 inertia( 0, 0, 0 );
+    btRigidBody::btRigidBodyConstructionInfo rb( mass, motion, collision, inertia );
+    btRigidBody * body = new btRigidBody( rb );
+//box->setRigidBody(body);
+    return( body );
+}
 /** \cond */
 struct MeshUpdater : public osg::Drawable::UpdateCallback
 {
@@ -91,16 +148,16 @@ struct MeshUpdater : public osg::Drawable::UpdateCallback
 
 };
 /** \endcond */
-
     osg::Node* makeFlag( btSoftRigidDynamicsWorld* bw )
 {
     const short resX( 12 ), resY( 9 );
 
     osg::ref_ptr< osg::Geode > geode( new osg::Geode );
+    osg::ref_ptr< osg::Group > root( new osg::Group );
 
-      osg::Vec3 llCorner( -2., 0., 5. );
+      osg::Vec3 llCorner( 0, 0., 0 );
       osg::Vec3 uVec( 4., 0., 0. );
-      osg::Vec3 vVec( 0., 0.1, 3. ); // Must be at a slight angle for wind to catch it.
+      osg::Vec3 vVec( 0., 0.0, 3. ); // Must be at a slight angle for wind to catch it.
     osgbDynamics::SoftBody* geom = new osgbDynamics::SoftBody;
     //osg::Geometry* geom = new osg::Geometry;
     osg::Vec3Array * verts=new osg::Vec3Array();
@@ -158,7 +215,7 @@ struct MeshUpdater : public osg::Drawable::UpdateCallback
         osgbCollision::asBtVector3( llCorner + uVec ),
         osgbCollision::asBtVector3( llCorner + vVec ),
         osgbCollision::asBtVector3( llCorner + uVec + vVec ),
-        resX, resY, 1+4 , true ) );
+        resX, resY, 0/*1+4*/ , true ) );
 
         ///retrive index from Bullet faces
 
@@ -195,8 +252,30 @@ struct MeshUpdater : public osg::Drawable::UpdateCallback
 geom->setSoftBody(softBody);
 //return geom;
    // geom->setUpdateCallback( new MeshUpdater( softBody) );
+     osg::MatrixTransform* BOX = createOSGBox( osg::Vec3( 0.1, 0.1, 5 ) );
+     btRigidBody *  RBOX = createBTBox( BOX, osg::Vec3( 0, 0, 5 ) );
+    root->addChild( BOX );
 
-    return( geode.release() );
+   osgbDynamics:: RigidBody* boxBodyrig=new osgbDynamics::RigidBody();
+   boxBodyrig ->setRigidBody( RBOX);
+    BOX->addUpdateCallback(boxBodyrig);
+    {
+      osgbDynamics::Anchor* an=new   osgbDynamics::Anchor();
+      an->setLocalFrame(osg::Vec3(-2,0.75,5));
+      an->setSoftBodyNodeIndex(resX*(resY-1) );
+    an->setRigidBody(boxBodyrig);
+    geom->addAnchor(an);
+    }
+    {
+    //const short resX( 12 ), resY( 9 );
+      osgbDynamics::Anchor* an=new   osgbDynamics::Anchor();
+      an->setLocalFrame(osg::Vec3(-2,0.75,2));
+      an->setSoftBodyNodeIndex(resX );
+    an->setRigidBody(boxBodyrig);
+    geom->addAnchor(an);
+    }
+    root->addChild(geode);
+    return( root.release() );
 }
 
 btSoftRigidDynamicsWorld* initPhysics()
@@ -284,9 +363,9 @@ root->setDynamicsWorld(bw);
     //viewer.setUpViewInWindow( 30, 30, 768, 480 );
 
 
-    /**/   osgDB::writeNodeFile(*root,"fok.osgt");
-    root=(osgbDynamics::World*)osgDB::readNodeFile("fok.osgt");
-  root->setDebugEnabled(true);
+    /*   osgDB::writeNodeFile(*root,"fok.osgt");
+    root=(osgbDynamics::World*)osgDB::readNodeFile("fok.osgt");*/
+  //root->setDebugEnabled(true);
 
     viewer.setSceneData( root );
 
@@ -297,14 +376,16 @@ root->setDynamicsWorld(bw);
     viewer.realize();
 
     // Create the launch handler.
-    osgbInteraction::LaunchHandler* lh = new osgbInteraction::LaunchHandler(
-        static_cast<btSoftRigidDynamicsWorld*>(root->getDynamicsWorld()), launchHandlerAttachPoint  );
+
+        osgbInteraction::LaunchHandler* lh = new osgbInteraction::LaunchHandler();
+     lh->setWorld(root);
+        lh->setAttachPoint( launchHandlerAttachPoint );
     {
         // Use a custom launch model: Sphere with radius 0.2 (instead of default 1.0).
         osg::Geode* geode = new osg::Geode;
-        const double radius( 1 );
+        const double radius( 0.1 );
         geode->addDrawable( new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(),radius)));//osgwTools::makeGeodesicSphere( radius ) );
-        lh->setLaunchModel( geode, new btSphereShape( radius ) );
+     //   lh->setLaunchModel( geode, new btSphereShape( radius ) );
         lh->setInitialVelocity( 40. );
 
         viewer.addEventHandler( lh );
@@ -314,7 +395,7 @@ root->setDynamicsWorld(bw);
     srh->capture();
     viewer.addEventHandler( srh.get() );*/
     viewer.addEventHandler( new osgbInteraction::DragHandler(
-       static_cast<btSoftRigidDynamicsWorld*>(root->getDynamicsWorld()), viewer.getCamera() ) );
+       /*static_cast<btSoftRigidDynamicsWorld*>(root->getDynamicsWorld()), viewer.getCamera()*/ ) );
 
 
     double prevSimTime = 0.;

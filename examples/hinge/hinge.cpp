@@ -463,11 +463,15 @@ int main( int argc, char** argv )
     tb->setHomePosition( osg::Vec3( 0., -8., 2. ), osg::Vec3( 0., 0., 1. ), osg::Vec3( 0., 0., 1. ) );
     viewer.setCameraManipulator( tb );
     viewer.getCamera()->setClearColor( osg::Vec4( .5, .5, .5, 1. ) );
-    viewer.realize();
+
 
     // Create the launch handler.
-    osgbInteraction::LaunchHandler* lh = new osgbInteraction::LaunchHandler(
-        bulletWorld, launchHandlerAttachPoint );
+ osgbInteraction::LaunchHandler* lh = new osgbInteraction::LaunchHandler();
+
+ osg::ref_ptr<osgbDynamics::World> _world = new osgbDynamics::World;
+ _world->setDynamicsWorld(bulletWorld);
+ lh->setWorld(_world);
+        lh->setAttachPoint( launchHandlerAttachPoint );
     {
         // Use a custom launch model: Sphere with radius 0.2 (instead of default 1.0).
         osg::Geode* geode = new osg::Geode;
@@ -482,12 +486,11 @@ int main( int argc, char** argv )
         viewer.addEventHandler( lh );
     }
 
-   /* srh->setLaunchHandler( lh );
+  /*  srh->setLaunchHandler( lh );
     srh->capture();
     viewer.addEventHandler( srh.get() );*/
-    viewer.addEventHandler( new osgbInteraction::DragHandler(
-        bulletWorld, viewer.getCamera() ) );
-
+    
+    viewer.realize();
 
     double prevSimTime = 0.;
     while( !viewer.done() )
@@ -496,7 +499,7 @@ int main( int argc, char** argv )
             dbgDraw->BeginDraw();
 
         const double currSimTime = viewer.getFrameStamp()->getSimulationTime();
-        bulletWorld->stepSimulation( currSimTime - prevSimTime );
+        bulletWorld->stepSimulation( 0.025 );
         prevSimTime = currSimTime;
 
         if( dbgDraw != NULL )

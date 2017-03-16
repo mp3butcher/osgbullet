@@ -39,9 +39,9 @@ namespace osgbInteraction
 {
 
 
-DragHandler::DragHandler( btDynamicsWorld* dw, osg::Camera* scene )
-  : _dw( dw ),
-    _scene( scene ),
+DragHandler::DragHandler( )
+  : _dw( 0 ),
+
     _constraint( NULL ),
     _constrainedMotionState( NULL ),
     _pt( NULL )
@@ -53,6 +53,20 @@ DragHandler::~DragHandler()
 
 bool DragHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
 {
+    osg::Camera * cam=aa.asView()->getCamera();
+    if(!_dw){
+    ///Find world forward
+        osgbDynamics::WorldFinderVisitor worldFinder;
+        worldFinder.setTraversalMode(osg::NodeVisitor::TRAVERSE_ALL_CHILDREN);
+       // osgUtil::View* v=dynamic_cast<osgUtil::View*>(aa.asView());
+        //if(!v)return false;
+        cam->accept(worldFinder);
+        _dw=worldFinder.getFoundWorld();
+        if(!_dw)
+            return false;
+    }
+    if(!_dw->getDynamicsWorld())
+        return false;
     const bool ctrl( ( ea.getModKeyMask() & osgGA::GUIEventAdapter::MODKEY_CTRL ) != 0 );
 
     if( ea.getEventType() == osgGA::GUIEventAdapter::PUSH )
@@ -61,7 +75,7 @@ bool DragHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdap
             ( ( ea.getButtonMask() & osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON ) == 0 ) )
             return( false );
 
-        const bool picked = pick( ea.getXnormalized(), ea.getYnormalized() );
+        const bool picked = pick(cam, ea.getXnormalized(), ea.getYnormalized() );
 
         if( picked )
             _constraint->getRigidBodyA().activate( true );
@@ -75,17 +89,17 @@ bool DragHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdap
             return( false );
 
         osg::Vec4d farPointNDC = osg::Vec4d( ea.getXnormalized(), ea.getYnormalized(), 1., 1. );
-        osg::Matrix p = _scene->getProjectionMatrix();
+        osg::Matrix p = cam->getProjectionMatrix();
         double zNear, zFar, fovy, aspect;
         p.getPerspective( fovy, aspect, zNear, zFar );
         osg::Vec4d farPointCC = farPointNDC * zFar;
         p.invert( p );
-        osg::Matrix v = _scene->getViewMatrix();
+        osg::Matrix v = cam->getViewMatrix();
         v.invert( v );
         osg::Vec4d farPointWC = farPointCC * p * v;
 
         osg::Vec3d look, at, up;
-        _scene->getViewMatrixAsLookAt( look, at, up );
+        cam->getViewMatrixAsLookAt( look, at, up );
 
 
         // Intersect ray with plane.
@@ -126,7 +140,7 @@ bool DragHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdap
         if( _pt != NULL )
             _pt->pause( true );
 
-        _dw->removeConstraint( _constraint );
+        _dw->getDynamicsWorld()->removeConstraint( _constraint );
 
         if( _pt != NULL )
             _pt->pause( false );
@@ -145,11 +159,11 @@ void DragHandler::setThreadedPhysicsSupport( osgbDynamics::PhysicsThread* pt )
     _pt = pt;
 }
 
-bool DragHandler::pick( float wx, float wy )
+bool DragHandler::pick(osg::Camera* _scene, float wx, float wy )
 {
-    if( !( _scene.valid() ) )
+    if( !( _scene ) )
     {
-        osg::notify( osg::WARN ) << "DragHandler: _scene == NULL." << std::endl;
+        osg::notify( osg::WARN ) << "DragHandler: osg::Camera* == NULL." << std::endl;
         return( false );
     }
 
@@ -165,7 +179,8 @@ bool DragHandler::pick( float wx, float wy )
     osgUtil::LineSegmentIntersector::Intersections& intersections = intersector->getIntersections();
 
     osg::Vec3d pickPointWC;
-    osgbCollision::RefRigidBody* rrb( NULL );
+    //osgbCollision::RefRigidBody* rrb( NULL );
+    const osgbDynamics::RigidBody * rrb(0);
     osgUtil::LineSegmentIntersector::Intersections::const_iterator it;
     for( it = intersections.begin(); it != intersections.end(); ++it )
     {
@@ -179,13 +194,18 @@ bool DragHandler::pick( float wx, float wy )
             //if we have a callback
             //    call the callback
             //else
-            {
+          /*  {
                 // Default behavior. See if UserData is a RefRigidBody.
                 const osg::Referenced* userData = currentNode.getUserData();
                 rrb = const_cast< osgbCollision::RefRigidBody* >(
                     dynamic_cast< const osgbCollision::RefRigidBody* >( userData ) );
                 if( rrb != NULL )
                     break;
+            }*/
+            const osg::Callback * cb=currentNode.getUpdateCallback();
+            while(cb&&!rrb){
+            rrb=dynamic_cast< const osgbDynamics::RigidBody *>(currentNode.getUpdateCallback());
+            cb=cb->getNestedCallback();
             }
         }
         if( rrb != NULL )
@@ -198,7 +218,8 @@ bool DragHandler::pick( float wx, float wy )
     if( rrb == NULL )
         return( false );
 
-    btRigidBody* rb = rrb->get();
+    btRigidBody* rb =const_cast<btRigidBody*>( rrb->getRigidBody());
+    if(!rb)return false;
 
     // Save the MotionState for this rigid body. We'll use it during the DRAG events.
     _constrainedMotionState = dynamic_cast< osgbDynamics::MotionState* >( rb->getMotionState() );
@@ -215,7 +236,7 @@ bool DragHandler::pick( float wx, float wy )
         osgbCollision::asBtVector3( pickPointBulletOCLocal ) );
     if( _pt != NULL )
         _pt->pause( true );
-    _dw->addConstraint( _constraint );
+    _dw->getDynamicsWorld()->addConstraint( _constraint );
     if( _pt != NULL )
         _pt->pause( false );
 

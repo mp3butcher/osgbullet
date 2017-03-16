@@ -121,6 +121,11 @@ public:
     void setInitialVelocity( double velocity ) { _initialVelocity = velocity; }
     double getInitialVelocity() const { return( _initialVelocity ); }
 
+        void setLaunchedMass( double m ) { _launchedMass = m; }
+    double getLaunchedMass() const { return( _launchedMass ); }
+
+
+
     /** \brief Specify collision filters for Bullet's addRigidBody() call.
 
     By default, there are no collision filters, and LaunchHandler uses the simple form
@@ -155,6 +160,7 @@ protected:
     btCollisionShape* _launchCollisionShape;
     bool _ownsCollisionShape;
     double _initialVelocity;
+    double _launchedMass;
     short _group, _mask;
 
     typedef std::list< osg::ref_ptr< osg::Node > > NodeList;

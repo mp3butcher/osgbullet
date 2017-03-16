@@ -210,7 +210,7 @@ REGISTER_OBJECT_WRAPPER(osgbDynamicsWorld,
    END_ENUM_SERIALIZER();
     ADD_USER_SERIALIZER(PhysicalProps);
     ADD_USER_SERIALIZER(Children);
-    ADD_USER_SERIALIZER(Joints);
+ //   ADD_USER_SERIALIZER(Joints);
 
 
 

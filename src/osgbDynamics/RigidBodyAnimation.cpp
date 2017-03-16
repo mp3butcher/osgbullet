@@ -56,7 +56,6 @@ osg::MatrixTransform* matTrans = static_cast< osg::MatrixTransform* >( node);
         osg::notify( osg::WARN ) << "RigidBodyAnimation requires RefBulletObjec
         return;
     }*/
-
 osgbDynamics::RigidBody* rig=dynamic_cast<osgbDynamics::RigidBody*> (matTrans->getUpdateCallback());
     btRigidBody* body = rig->getRigidBody();
     if( body->getInvMass() != 0.0 ||!rig->getParentWorld())
@@ -64,7 +63,8 @@ osgbDynamics::RigidBody* rig=dynamic_cast<osgbDynamics::RigidBody*> (matTrans->g
         traverse( node, nv );;
    }
 
-    osg::Matrix mat = matTrans->getMatrix();
+    osg::Matrix mat = computeLocalToWorld( node->getParentalNodePaths()[0] );
+    //osg::Matrix mat = matTrans->getMatrix();
     body->getMotionState()->setWorldTransform(
         osgbCollision::asBtTransform( mat ) );
     traverse( node, nv );

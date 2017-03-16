@@ -20,7 +20,7 @@
 
 #ifndef __OSGBDYNAMICS_RIGID_BODY_H__
 #define __OSGBDYNAMICS_RIGID_BODY_H__ 1
-
+#include <osg/TriangleFunctor>
 #include <osgbDynamics/Export.h>
 #include <osg/NodeCallback>
 #include <osgbDynamics/CreationRecord.h>
@@ -33,6 +33,9 @@
 #include <osgbCollision/RefBulletObject.h>
 
 #include <osgbDynamics/Joint.h>
+namespace osgAnimation{
+    class Bone;
+}
 namespace osgbDynamics
 {
 /** use to filter collisions  **/
@@ -74,12 +77,21 @@ public:
     META_Object(osgbDynamics,RigidBody)
 
 
-    inline void setRigidBody(btRigidBody*body){_body=body;}
-    inline const btRigidBody* getRigidBody()const{return _body;}
-    inline btRigidBody* getRigidBody(){return _body;}
+    inline void setRigidBody(btRigidBody*body)
+    {
+        _body=body;
+    }
+    inline const btRigidBody* getRigidBody()const
+    {
+        return _body;
+    }
+    inline btRigidBody* getRigidBody()
+    {
+        return _body;
+    }
     //virtual void traverse(osg::NodeVisitor &nv);
-virtual void operator()( osg::Node* node, osg::NodeVisitor* nv );
- const World *getParentWorld()const
+    virtual void operator()( osg::Node* node, osg::NodeVisitor* nv );
+    const World *getParentWorld()const
     {
         return _parentWorld;
     }
@@ -87,11 +99,11 @@ virtual void operator()( osg::Node* node, osg::NodeVisitor* nv );
     {
         _parentWorld=c;
     }
- unsigned int getNumJoints()const
+    unsigned int getNumJoints()const
     {
         return _joints.size();
     }
-   const Joint * getJoint(unsigned int i)const
+    const Joint * getJoint(unsigned int i)const
     {
         return _joints[i];
     }
@@ -103,15 +115,15 @@ virtual void operator()( osg::Node* node, osg::NodeVisitor* nv );
     void removeJoint(Joint*p);
 protected:
     virtual void addPhysicalObjectToParentWorld();
-   // virtual void updatematrix( osg::Node* node, osg::NodeVisitor* nv );
+    // virtual void updatematrix( osg::Node* node, osg::NodeVisitor* nv );
     ~RigidBody();
 
-   // osgbDynamics::CreationRecord* cr;
+    // osgbDynamics::CreationRecord* cr;
 
     //btCollisionShape* _shape ;
     btRigidBody *_body;
     World * _parentWorld;
-    std::vector< Joint* > _joints;
+    std::vector< osg::ref_ptr<Joint> > _joints;
 
 };
 
@@ -207,7 +219,7 @@ Uses the osgbCollision::ComputeShapeVisitor to create a btCompoundShape from Cre
 Currently, a shape per Geode is created. CreationRecord::_shapeType specifies the shape type created per Geode.
 If CreationRecord::_shapeType is CYLINDER_SHAPE_PROXYTYPE, CreationRecord::_axis specifies the cylinder major axis.
 */
-btRigidBody* OSGBDYNAMICS_EXPORT createRigidBody( osgbDynamics::CreationRecord* cr );
+ OSGBDYNAMICS_EXPORT btRigidBody*createRigidBody( osgbDynamics::CreationRecord* cr );
 
 /** \overload
 <p>
@@ -215,11 +227,223 @@ Use this function to create a rigid body if you have already created the collisi
 This is useful for sharing collision shapes.
 </p>
 */
-btRigidBody* OSGBDYNAMICS_EXPORT createRigidBody( osgbDynamics::CreationRecord* cr, btCollisionShape* shape );
-
+ OSGBDYNAMICS_EXPORT btRigidBody*createRigidBody( osgbDynamics::CreationRecord* cr, btCollisionShape* shape );
 
 /**@}*/
 
+class OSGBDYNAMICS_EXPORT ConvexDecompositionParams
+{
+
+public:
+    ConvexDecompositionParams( unsigned int depth = 5,
+                               float cpercent     = 5,
+                               float ppercent     = 15,
+                               unsigned int maxv  = 16,
+                               float skinWidth=0)
+        :  mDepth(depth),mCpercent(cpercent),mPpercent(ppercent),mMaxVertices(maxv),mSkinWidth(skinWidth) {}
+
+    unsigned int getDepth()const
+    {
+        return mDepth;
+    }
+    void setDepth(unsigned int d)
+    {
+        mDepth=d;
+    }
+    float getConcavityPercentage()const
+    {
+        return mCpercent;
+    }
+    void setConcavityPercentage(float d)
+    {
+        mCpercent=d;
+    }
+    float getVolumeConservationPercent()const
+    {
+        return mPpercent;
+    }
+    void setVolumeConservationPercent(float d)
+    {
+        mPpercent=d;
+    }
+    unsigned int getMaxVerticesPerHull()const
+    {
+        return mMaxVertices;
+    }
+    void setMaxVerticesPerHull(unsigned int d)
+    {
+        mMaxVertices=d;
+    }
+    float getSkinWidth()const
+    {
+        return mSkinWidth;
+    }
+    void setSkinWidth(float d)
+    {
+        mSkinWidth=d;
+    }
+
+protected:
+    unsigned int  mDepth;    // depth to split, a maximum of 10, generally not over 7.
+    float         mCpercent; // the concavity threshold percentage.  0=20 is reasonable.
+    float         mPpercent; // the percentage volume conservation threshold to collapse hulls. 0-30 is reasonable.
+
+    // hull output limits.
+    unsigned int  mMaxVertices; // maximum number of vertices in  output hulls. Recommended 32 or less.
+    float         mSkinWidth;   // a skin width to apply to the output hulls.
+
+};
+
+///recursively create rigidBodies for each child geometry found
+///assume convex TODO test concavity
+class OSGBDYNAMICS_EXPORT CreateRigidVisitor: public osg::NodeVisitor
+{
+public:
+    CreateRigidVisitor():osg::NodeVisitor(osg::NodeVisitor::TRAVERSE_ALL_CHILDREN)
+    {
+        _result=new osg::Group;
+        _overallcr=new CreationRecord;//prevent crash
+        _totalvolume=0;
+    }
+
+    ///overall CreationRecord (with the overall mass that will be devided among children)
+    void setOverallCreationRecord(CreationRecord*cr){_overallcr=cr;}
+    CreationRecord* getOverallCreationRecord()const {return _overallcr;}
+
+    virtual void apply(osg::Geode&);
+
+    virtual void apply(osg::Group&);
+    osg::Group * getResult();
+protected:
+    std::vector< std::pair<osg::Drawable*,osg::Matrix> > _collecteddrawables;
+    osg::ref_ptr<osg::Group> _result;
+    osg::ref_ptr<CreationRecord> _overallcr;
+    float _totalvolume;
+
+};
+
+///create bullet dynamics for osganimation skeleton
+///collect riggeometry and bones
+class OSGBDYNAMICS_EXPORT CreateRigidFromSkeletonVisitor: public osg::NodeVisitor
+{
+public:
+    CreateRigidFromSkeletonVisitor():osg::NodeVisitor(osg::NodeVisitor::TRAVERSE_ALL_CHILDREN)
+    {
+        _result=new osg::Group;
+        _overallcr=new CreationRecord;//prevent crash
+        _totalvolume=0;
+    }
+
+    ///overall CreationRecord (with the overall mass that will be devided among children)
+    void setOverallCreationRecord(CreationRecord*cr){_overallcr=cr;}
+    CreationRecord* getOverallCreationRecord()const {return _overallcr;}
+
+    virtual void apply(osg::Geode&);
+
+   // virtual void apply(osg::Group&);
+
+    ///find the dominant bone of each riggeometry
+    ///for each dominant bone create collision based on rigeometries
+    ///add a rigidbody callback
+    void computeRig();
+protected:
+    std::vector< std::pair<osg::Geometry*,osg::Matrix> > _collecteddrawables;
+  //  std::vector< osgAnimation::Bone* > _collectedbones;
+    osg::ref_ptr<osg::Group> _result;
+    osg::ref_ptr<CreationRecord> _overallcr;
+    float _totalvolume;
+
+};
+///Add breakable fixed constraint on all Children (that have rigidBodies overlapping)
+///use a temporary btBulletWorld underthe wood (to retrieve overlapping pairs)
+class OSGBDYNAMICS_EXPORT AttachRigidVisitor : public osg::NodeVisitor
+{
+public:
+AttachRigidVisitor();
+~AttachRigidVisitor();
+    virtual void apply( osg::MatrixTransform& node );
+    float  getBreakThreshold()const {return _breakthreshold;}
+    void setBreakThreshold(float thresh)
+    {
+        _breakthreshold=thresh;
+    }
+///use a 6DOFConstraint instead of a Fixed Constraint
+    bool  getUseGenericConstraint()const {return _useGenericConstraint;}
+    void setUseGenericConstraint(bool b)
+    {
+        _useGenericConstraint=b;
+    }
+void generateConstraints();
+protected:
+    bool _useGenericConstraint;
+    float _breakthreshold;
+    btDiscreteDynamicsWorld* m_dynamicsWorld;
+    std::map<btRigidBody*,RigidBody*> rigs;
+};
+
+
+///TriangleFunctor
+		/*btScalar volume = btScalar(0.);
+		btVector3 com(0., 0., 0.);
+		for (j=0; j < numFaces; j++) {
+			const btConvexHullComputer::Edge* edge = &convexHC->edges[convexHC->faces[j]];
+			v0 = edge->getSourceVertex();
+			v1 = edge->getTargetVertex();
+			edge = edge->getNextEdgeOfFace();
+			v2 = edge->getTargetVertex();
+			while (v2 != v0) {
+				// Counter-clockwise triangulated voronoi shard mesh faces (v0-v1-v2) and edges here...
+				btScalar vol = convexHC->vertices[v0].triple(convexHC->vertices[v1], convexHC->vertices[v2]);
+				volume += vol;
+				com += vol * (convexHC->vertices[v0] + convexHC->vertices[v1] + convexHC->vertices[v2]);
+				edge = edge->getNextEdgeOfFace();
+				v1 = v2;
+				v2 = edge->getTargetVertex();
+			}
+		}
+		com /= volume * btScalar(4.);
+		volume /= btScalar(6.);*/
+
+struct ComputeVolume{
+ComputeVolume():_vol(0){};
+ inline void  operator()( const osg::Vec3 v1, const osg::Vec3 v2, const osg::Vec3 v3, bool _temp )
+    {
+    	_vol+=v1[0] * (v2[1] * v3[2] - v2[2] * v3[1]) +
+			v1[1] * (v2[2] * v3[0] - v2[0] * v3[2]) +
+			v1[2] * (v2[0] * v3[1] - v2[1] * v3[0]);
+    }
+float getComputedVolume()const{return _vol/6.0;}
+protected:
+    float _vol;
+};
+struct ComputeCenterOfMass{
+ComputeCenterOfMass():_vol(0),_com(osg::Vec3f()){};
+ inline void  operator()( const osg::Vec3 v1, const osg::Vec3 v2, const osg::Vec3 v3, bool _temp )
+    {float vol=v1[0] * (v2[1] * v3[2] - v2[2] * v3[1]) +
+			v1[1] * (v2[2] * v3[0] - v2[0] * v3[2]) +
+			v1[2] * (v2[0] * v3[1] - v2[1] * v3[0]);
+			_vol+=vol;
+			_com += (v1+v2+v3) * vol;
+    }
+osg::Vec3f getComputedCOM()const{return _com*(1.0/(4.0*_vol)) ;}
+float getComputedVolume()const{return _vol/6.0;}
+protected:
+    float _vol;
+    osg::Vec3f _com;
+};
+
+typedef osg::TriangleFunctor<ComputeCenterOfMass> ComputeCenterOfMassFunctor;
+typedef osg::TriangleFunctor<ComputeVolume> ComputeVolumeFunctor;
+
+
+
+
+///Decompose a Geometry into Convex Geometrys
+OSGBDYNAMICS_EXPORT osg::Group*   convexDecomposition(osg::Geometry* g,const ConvexDecompositionParams& params);
+
+
+
+ OSGBDYNAMICS_EXPORT osg::Group* fractureCollisionShape(osg::Geometry* g,osg::Vec3Array*usersamples,bool useGenericConstraint=false, bool useMpr=false );
 
 // osgbDynamics
 }

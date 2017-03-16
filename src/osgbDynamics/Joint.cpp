@@ -38,12 +38,18 @@
 namespace osgbDynamics
 {
 
-Joint::Joint():_rigA(0),_rigB(0){}
-Joint::~Joint(){}
+Joint::Joint():_rigA(0), _rigB(0), _btConstraint(0){}
+Joint::~Joint(){
+//if(_rigA)_rigA->removeJoint(this);
+//if(_rigB)_rigA->removeJoint(this);
+OSG_WARN<<"Constraint DELETED"<<std::endl;
+delete _btConstraint;
+}
 
     Joint::Joint( const Joint& copy, const osg::CopyOp& copyop ){}
 const btTypedConstraint* Joint::getConstraint()const
 {
+return _btConstraint;
     const   osgbCollision::RefBulletObject<  btTypedConstraint >*  refptr=
         dynamic_cast<  const   osgbCollision::RefBulletObject<  btTypedConstraint >* >( getUserData() );
 
@@ -52,6 +58,7 @@ const btTypedConstraint* Joint::getConstraint()const
 
 btTypedConstraint* Joint::getConstraint()
 {
+return _btConstraint;
     osgbCollision::RefBulletObject<  btTypedConstraint >*  refptr=
         dynamic_cast<     osgbCollision::RefBulletObject<  btTypedConstraint >* >( getUserData() );
 
@@ -60,7 +67,8 @@ btTypedConstraint* Joint::getConstraint()
 
 void Joint::setConstraint( btTypedConstraint *b )
 {
-    setUserData(new osgbCollision::RefBulletObject<btTypedConstraint>(b));
+ _btConstraint=b;
+    //setUserData(new osgbCollision::RefBulletObject<btTypedConstraint>(b));
     }
   void Joint::setBodyA(RigidBody *c)
     {

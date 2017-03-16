@@ -68,7 +68,34 @@ protected:
 
 };*/
 
+class SoftBody;
+class OSGBDYNAMICS_EXPORT Anchor : public  osg::Object
+{
+public:
+    Anchor();
+    Anchor( const Anchor& copy, const osg::CopyOp& copyop=osg::CopyOp::SHALLOW_COPY );
+    META_Object(osgbDynamics,Anchor)
 
+    void setLocalFrame(const osg::Vec3&m){_localrig=m;}
+    const osg::Vec3 & getLocalFrame()const{return _localrig;}
+
+    void setSoftBodyNodeIndex(int i){_nodeindex=i;}
+    int getSoftBodyNodeIndex()const{return _nodeindex;}
+
+    const RigidBody *getRigidBody()const    {        return _rig;    }
+     RigidBody *getRigidBody()    {        return _rig;    }
+    void setRigidBody(RigidBody *c);
+
+    bool getIsCollisionEnable()const {return _collisionenabled;}
+    void setIsCollisionEnable(bool b){ _collisionenabled=b;}
+protected:
+    ~Anchor();
+    bool _collisionenabled;
+    osg::Vec3 _localrig;
+    int _nodeindex;
+    RigidBody* _rig;
+
+};
 class OSGBDYNAMICS_EXPORT SoftBody : public osg::Geometry
 {
 public:
@@ -110,9 +137,28 @@ public:
         _parentWorld=c;
     }
 
+
+     unsigned int getNumAnchors()const
+    {
+        return _anchors.size();
+    }
+   const Anchor * getAnchor(unsigned int i)const
+    {
+        return _anchors[i];
+    }
+    Anchor * getAnchor(unsigned int i)
+    {
+        return _anchors[i];
+    }
+    void addAnchor(Anchor*p);
+    void removeAnchor(Anchor*p);
+
     ///mainly 4 missing bullet serialization
     void setWindVelocity(const osg::Vec3 &w);
     const osg::Vec3& getWindVelocity()const;
+
+    ///transform underlying softbody by a matrix
+    //void  transform(osg::Matrix &)
 protected:
 
     virtual void addPhysicalObjectToParentWorld();
@@ -120,12 +166,13 @@ protected:
     btSoftBody *_body;
     World * _parentWorld;
     osg::Vec3 _windVelocity;///redondancy for serializer
+    std::vector<osg::ref_ptr<Anchor> > _anchors;
 
 
 
 };
-
-
+///transform a softbody by a matrix
+void OSGBDYNAMICS_EXPORT transform(btSoftBody* soft, const osg::Matrix & m );
 
 // osgbDynamics
 }

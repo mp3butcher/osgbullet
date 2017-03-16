@@ -5,6 +5,8 @@
 
 #include <osgbDynamics/SoftBody.h>
 
+#include <osgbCollision/Utils.h>
+
 #include <osgbDynamics/World.h>
 
 #include "osgbtWorldImporter.h"
@@ -19,6 +21,63 @@
 #include <osgDB/ObjectWrapper>
 #include <osgDB/InputStream>
 #include <osgDB/OutputStream>
+
+namespace osgbDynamicsSoftBodyAnchorWrapper{
+
+REGISTER_OBJECT_WRAPPER(osgbDynamicsSoftBodyAnchor,
+                        new osgbDynamics::Anchor,
+                        osgbDynamics::Anchor,
+                        "osg::Object osgbDynamics::Anchor")
+{
+
+    ADD_INT_SERIALIZER( SoftBodyNodeIndex,0);
+    ADD_VEC3F_SERIALIZER(LocalFrame,osg::Vec3());
+    ADD_OBJECT_SERIALIZER(RigidBody,osgbDynamics::RigidBody,NULL);
+    ADD_BOOL_SERIALIZER(IsCollisionEnable,true);
+
+}
+
+}
+
+
+namespace osgbDynamicsSoftBodyWrapper{
+
+
+static bool checkAnchors( const osgbDynamics::SoftBody& node )
+{
+    return node.getNumAnchors()>0;
+}
+
+static bool readAnchors( osgDB::InputStream& is, osgbDynamics::SoftBody& node )
+{
+    unsigned int size = 0; is >> size >> is.BEGIN_BRACKET;
+    for ( unsigned int i=0; i<size; ++i )
+    {
+        osg::ref_ptr<osg::Object> obj = is.readObject();
+        osgbDynamics::Anchor* child = dynamic_cast<osgbDynamics::Anchor*>( obj.get() );
+        if ( child ) node.addAnchor( child );
+if(child->getRigidBody()->getRigidBody() &&node.getSoftBody())
+        node.getSoftBody()->appendAnchor( child->getSoftBodyNodeIndex(),child->getRigidBody()->getRigidBody(),osgbCollision::asBtVector3(child->getLocalFrame())
+    ,!child->getIsCollisionEnable() );   ///bool disableCollisionBetweenLinkedBodies=false,btScalar influence = 1);
+    else{
+    OSG_WARN<<" Warning: Anchor can't be defined (missing bodies definition)"<<std::endl;
+    }
+    }
+    is >> is.END_BRACKET;
+    return true;
+}
+
+static bool writeAnchors( osgDB::OutputStream& os, const osgbDynamics::SoftBody& node )
+{
+    unsigned int size = node.getNumAnchors();
+    os << size << os.BEGIN_BRACKET << std::endl;
+    for ( unsigned int i=0; i<size; ++i )
+    {
+        os << node.getAnchor(i);
+    }
+    os << os.END_BRACKET << std::endl;
+    return true;
+}
 
 static bool checkPhysicalProps( const osgbDynamics::SoftBody& node )
 {
@@ -113,5 +172,7 @@ REGISTER_OBJECT_WRAPPER(osgbDynamicsSoftBody,
 
     ADD_USER_SERIALIZER( PhysicalProps);
     ADD_VEC3F_SERIALIZER(WindVelocity,osg::Vec3());
+    ADD_USER_SERIALIZER(Anchors);
 
+}
 }

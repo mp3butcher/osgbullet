@@ -228,8 +228,9 @@ int main( int argc, char** argv )
     viewer.addEventHandler( new osgViewer::StatsHandler );
 
     // Create the launch handler.
-    osgbInteraction::LaunchHandler* lh = new osgbInteraction::LaunchHandler(
-        bulletWorld, launchHandlerAttachPoint );
+ osgbInteraction::LaunchHandler* lh = new osgbInteraction::LaunchHandler();
+     //lh->setWorld(root);
+        lh->setAttachPoint( launchHandlerAttachPoint );
     {
         // Use a custom launch model: Sphere with radius 0.5 (instead of default 1.0).
         osg::Geode* geode = new osg::Geode;
@@ -245,7 +246,7 @@ int main( int argc, char** argv )
     srh->capture();
     viewer.addEventHandler( srh.get() );*/
     osgbInteraction::DragHandler* dh = new osgbInteraction::DragHandler(
-        bulletWorld, viewer.getCamera() );
+       /* bulletWorld, viewer.getCamera() */);
     viewer.addEventHandler( dh );
 
     lh->setThreadedPhysicsSupport( &pt, &tBuf, &msl );

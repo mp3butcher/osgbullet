@@ -1,4 +1,4 @@
-FILE(REMOVE_RECURSE
+file(REMOVE_RECURSE
   "CMakeFiles/osgbDynamics.dir/Constraints.cpp.o"
   "CMakeFiles/osgbDynamics.dir/CreationRecord.cpp.o"
   "CMakeFiles/osgbDynamics.dir/GroundPlane.cpp.o"
@@ -13,9 +13,12 @@ FILE(REMOVE_RECURSE
   "../../lib/libosgbDynamicsd.pdb"
   "../../lib/libosgbDynamicsd.so"
   "../../lib/libosgbDynamicsd.so.3.00.00"
+  "../../lib/libosgbDynamicsd.pdb"
+  "CMakeFiles/CMakeRelink.dir/libosgbDynamicsd.so"
+  "CMakeFiles/CMakeRelink.dir/libosgbDynamicsd.so.3.00.00"
 )
 
 # Per-language clean rules from dependency scanning.
-FOREACH(lang CXX)
-  INCLUDE(CMakeFiles/osgbDynamics.dir/cmake_clean_${lang}.cmake OPTIONAL)
-ENDFOREACH(lang)
+foreach(lang CXX)
+  include(CMakeFiles/osgbDynamics.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()

@@ -1,4 +1,4 @@
-FILE(REMOVE_RECURSE
+file(REMOVE_RECURSE
   "CMakeFiles/osgbCollision.dir/BoundingCone.cpp.o"
   "CMakeFiles/osgbCollision.dir/BoundingCylinder.cpp.o"
   "CMakeFiles/osgbCollision.dir/Chart.cpp.o"
@@ -18,9 +18,12 @@ FILE(REMOVE_RECURSE
   "../../lib/libosgbCollisiond.pdb"
   "../../lib/libosgbCollisiond.so"
   "../../lib/libosgbCollisiond.so.3.00.00"
+  "../../lib/libosgbCollisiond.pdb"
+  "CMakeFiles/CMakeRelink.dir/libosgbCollisiond.so"
+  "CMakeFiles/CMakeRelink.dir/libosgbCollisiond.so.3.00.00"
 )
 
 # Per-language clean rules from dependency scanning.
-FOREACH(lang CXX)
-  INCLUDE(CMakeFiles/osgbCollision.dir/cmake_clean_${lang}.cmake OPTIONAL)
-ENDFOREACH(lang)
+foreach(lang CXX)
+  include(CMakeFiles/osgbCollision.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()

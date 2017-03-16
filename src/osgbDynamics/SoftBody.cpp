@@ -34,6 +34,7 @@
 #include <osgbCollision/Utils.h>
 #include <osgUtil/SmoothingVisitor>
 #include <osgbDynamics/TripleBuffer.h>
+#include <assert.h>
 using namespace osgbCollision;
 namespace osgbDynamics
 {
@@ -62,12 +63,29 @@ public:
     World* foundWorld;
 };
 
+Anchor::Anchor():_collisionenabled(true),_rig(0),_nodeindex(0){
 
+}
+Anchor::Anchor( const Anchor& copy, const osg::CopyOp& copyop ){}
+Anchor::~Anchor(){
+
+}
+void Anchor::setRigidBody(RigidBody*rig){
+_rig=rig;
+}
 SoftBody::SoftBody():_parentWorld(0),_body(0) {
     //forceUpdate
     setNumChildrenRequiringUpdateTraversal(1);
 }
-SoftBody::~SoftBody() {}
+SoftBody::~SoftBody() {
+    if(_parentWorld&&_body){
+        btSoftRigidDynamicsWorld * w=0;
+        if(w=dynamic_cast<btSoftRigidDynamicsWorld*>(_parentWorld->getDynamicsWorld())){
+            w->removeSoftBody(_body);
+            delete _body;
+        }
+    }
+}
 SoftBody::SoftBody( const SoftBody& copy, const osg::CopyOp& copyop) {}
 /*const btSoftBody* SoftBody::getSoftBody()const
 {
@@ -140,6 +158,49 @@ void SoftBody::setSoftBody( btSoftBody *softBody )
 getOrCreateVertexBufferObject()->setUsage( GL_DYNAMIC_DRAW );
 
 
+}
+
+
+void SoftBody::addAnchor(Anchor*j)
+{
+///avoid duplicate
+    for(std::vector<osg::ref_ptr<Anchor> >::iterator i=_anchors.begin(); i!=_anchors.end(); i++)
+        if(i->get()==j)return;
+
+    btRigidBody * rig=0;
+    if(j->getRigidBody() && (rig=j->getRigidBody()->getRigidBody()))
+    {
+
+            _anchors.push_back(j);
+            btVector3 pivot=osgbCollision::asBtVector3(j->getLocalFrame());
+            _body->appendAnchor(j->getSoftBodyNodeIndex(),rig,pivot, !j->getIsCollisionEnable());
+
+    }
+    else
+    {
+///joint constraint not defined yet
+//debug
+        OSG_WARN<<"Warning SoftBody anchor RigidBody not defined"<<std::endl;
+    }
+}
+void SoftBody::removeAnchor(Anchor*j)
+{
+    for(std::vector<osg::ref_ptr<Anchor> >::iterator i=_anchors.begin(); i!=_anchors.end(); i++)
+    {
+        if(i->get()==j)
+        {
+
+            _anchors.erase(i);
+            std::vector<osg::ref_ptr<Anchor> > tempanchors=_anchors;
+            _anchors.clear();
+            _body->m_anchors.clear();
+            for(std::vector<osg::ref_ptr<Anchor> >::iterator ix=tempanchors.begin(); ix!=tempanchors.end(); ix++)
+                addAnchor(*ix);
+
+
+            return;
+        }
+    }
 }
 void SoftBody::setWindVelocity(const osg::Vec3& w){
     btSoftBody*_body=getSoftBody();
@@ -228,6 +289,15 @@ void SoftBody::addPhysicalObjectToParentWorld()
         OSG_WARN<<"SoftBody: parentworld hasn't been found"<<std::endl;
     }
 
+}
+
+
+
+void transform(btSoftBody* soft, const osg::Matrix & m ){
+   btSoftBody::tNodeArray& nodes = soft->m_nodes;
+   btTransform btm=osgbCollision::asBtTransform(m);
+   for(  unsigned int idx=0; idx<nodes.size(); idx++)
+        nodes[ idx ].m_x =btm(nodes[ idx ].m_x);
 }
 
 }

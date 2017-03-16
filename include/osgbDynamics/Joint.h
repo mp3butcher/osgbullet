@@ -53,6 +53,7 @@ protected:
 
     RigidBody* _rigA;
     RigidBody* _rigB;
+    btTypedConstraint*_btConstraint;
 
 };
 

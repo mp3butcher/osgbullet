@@ -28,6 +28,7 @@ namespace osgbDynamics
 
 
 
+
 /** The basic element of the physics abstract layer */
 class OSGBDYNAMICS_EXPORT  World : public osg::Group
 {
@@ -125,10 +126,25 @@ protected:
     std::vector<osg::ref_ptr<Joint> > _joints;
     std::vector<osg::ref_ptr<Joint> > _joints2add; ///temporary store in case world isn't setted  (parsed on update traversal)
     ///inner debug draw
-    osg::ref_ptr<osg::Geode> _debugdrawable;
+    osg::ref_ptr<osg::Group> _debugdrawable;
     osgbCollision::GLDebugDrawer* dbgDraw;
 };
-
+///Node visitor used to find world..default is TRAVERSE_PARENTS
+class OSGBDYNAMICS_EXPORT WorldFinderVisitor : public osg::NodeVisitor
+{
+public:
+    WorldFinderVisitor()
+        : osg::NodeVisitor(osg::NodeVisitor::TRAVERSE_PARENTS), foundWorld(NULL)  {}
+    void apply( osg::Node& node )
+    {
+        if( !foundWorld )
+            foundWorld = dynamic_cast<World*>(&node);
+        traverse( node );
+    }
+    World* getFoundWorld()const{return  foundWorld;}
+    protected:
+        World* foundWorld;
+};
 }
 
 #endif

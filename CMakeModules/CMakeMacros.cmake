@@ -23,7 +23,7 @@ macro( _osgBulletPlugin TRGTNAME )
         )
         target_link_libraries( ${TRGTNAME}
             ${OSGWORKS_LIBRARIES}
-            ${OSG_LIBRARIES}
+              ${OSG_LIBRARIES} 
         )
     else()
         add_library( ${TRGTNAME} STATIC ${ARGN} )
@@ -44,6 +44,7 @@ macro( _osgBulletMakeInteractionExe _exeName )
     set( _bulletLibs
         "${BULLET_LIBRARIES}"
         "${OSGBULLET_P5_LIBRARY}"
+        ${OSG_LIBRARIES}
     )
     _osgBulletMakeExeInternal( ${_exeName} "${_osgBulletLibs}" "${_bulletLibs}" ${ARGN} )
 endmacro()
@@ -54,6 +55,7 @@ macro( _osgBulletMakeDynamicsExe _exeName )
     )
     set( _bulletLibs
         "${BULLET_LIBRARIES}"
+         ${OSG_LIBRARIES}
     )
     _osgBulletMakeExeInternal( ${_exeName} "${_osgBulletLibs}" "${_bulletLibs}" ${ARGN} )
 endmacro()
@@ -71,6 +73,7 @@ macro( _osgBulletMakeCollisionExe _exeName )
         set( _bulletLibs
             ${BULLET_COLLISION_LIBRARY}
             ${BULLET_MATH_LIBRARY}
+         ${OSG_LIBRARIES}
         )
     endif()
     _osgBulletMakeExeInternal( ${_exeName} "${_osgBulletLibs}" "${_bulletLibs}" ${ARGN} )
@@ -87,9 +90,9 @@ macro( _osgBulletMakeExeInternal _exeName _osgBulletLibs _bulletLibs )
     )
     target_link_libraries( ${_exeName}
         ${OSGWORKS_LIBRARIES}
-        ${OSG_LIBRARIES}
         ${_bulletLibs}
-    )
+     ${OSG_LIBRARIES}
+     )
     if( ${CATEGORY} STREQUAL "App" )
         install(
             TARGETS ${_exeName}
